@@ -1,0 +1,12 @@
+node_modules/
+backend/node_modules/
+
+.env
+
+*.db
+backend/*.db
+
+uploads/
+backend/uploads/
+
+.vscode/
