@@ -242,3 +242,5 @@ console.log('Done');
 ---
 
 *New Max Admin System — Built with Node.js + Express + SQLite*
+#   N e w - M a x - P r o j e c t  
+ 
