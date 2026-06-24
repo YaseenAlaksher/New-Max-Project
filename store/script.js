@@ -14,7 +14,7 @@ const CONFIG = {
   ORDER_WEBHOOK: '',
   // URL السيرفر الـ backend — غيّره لرابط الإنتاج لما تنشر
   // اتركه فاضي '' لو مش عايز ترتبط بالـ backend دلوقتي
-  API_URL: '',
+  API_URL: 'http://localhost:3001',
 };
 
 // ─── BROKEN IMAGE FALLBACK ────────────────────────────────────
