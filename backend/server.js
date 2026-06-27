@@ -204,54 +204,40 @@ function productToStoreFormat(p) {
 // ════════════════════════════════════════════════════════
 //  AUTH ROUTES
 // ════════════════════════════════════════════════════════
-app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password)
-    return res.status(400).json({ error: 'Username and password required' });
-
-  const admin = db
-    .prepare('SELECT * FROM admins WHERE username = ?')
-    .get(username);
-  if (!admin || !bcrypt.compareSync(password, admin.password_hash)) {
-    return res.status(401).json({ error: 'Username or password is incorrect' });
-  }
-
-  const token = jwt.sign(
-    { id: admin.id, username: admin.username },
-    JWT_SECRET,
-    { expiresIn: '7d' },
-  );
-  res.json({
-    ok: true,
-    url: `${process.env.BACKEND_URL}/uploads/${req.file.filename}`,
-  });
-});
-
 app.post('/api/auth/change-password', auth, (req, res) => {
   const { currentPassword, newPassword } = req.body;
+
   if (!newPassword || newPassword.length < 6)
-    return res
-      .status(400)
-      .json({ error: 'Password must be at least 6 characters' });
+    return res.status(400).json({
+      error: 'Password must be at least 6 characters'
+    });
 
   const admin = db
     .prepare('SELECT * FROM admins WHERE id = ?')
     .get(req.admin.id);
+
   if (!bcrypt.compareSync(currentPassword, admin.password_hash)) {
-    return res.status(400).json({ error: 'Current password is incorrect' });
+    return res.status(400).json({
+      error: 'Current password is incorrect'
+    });
   }
 
-  db.prepare('UPDATE admins SET password_hash = ? WHERE id = ?').run(
+  db.prepare(
+    'UPDATE admins SET password_hash = ? WHERE id = ?'
+  ).run(
     bcrypt.hashSync(newPassword, 10),
-    req.admin.id,
+    req.admin.id
   );
+
   res.json({ ok: true });
 });
 
-app.get('/api/auth/me', auth, (req, res) => {
-  res.json({ username: req.admin.username });
-});
 
+app.get('/api/auth/me', auth, (req, res) => {
+  res.json({
+    username: req.admin.username
+  });
+});
 // ════════════════════════════════════════════════════════
 //  PRODUCTS (ADMIN)
 // ════════════════════════════════════════════════════════
