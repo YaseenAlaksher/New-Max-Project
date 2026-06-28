@@ -663,6 +663,16 @@ function logout() {
   document.getElementById('login-pass').value = '';
 }
 
+// ══════════════════════════════════════════════════════
+//  NAVIGATION CONSTANTS (must be before showApp/navigate)
+// ══════════════════════════════════════════════════════
+const PAGE_TITLES = { dashboard:'Dashboard', products:'Products', inventory:'Inventory', orders:'Orders', settings:'Settings' };
+const PAGE_ACTIONS = {
+  products: `<button class="topbar-btn topbar-btn-primary" onclick="openAddProduct()">+ Add Product</button>`,
+  inventory: `<button class="topbar-btn topbar-btn-secondary" onclick="loadVariants()">🔄 Refresh</button>`,
+  orders: `<button class="topbar-btn topbar-btn-secondary" onclick="loadOrders()">🔄 Refresh</button>`,
+};
+
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
@@ -689,12 +699,6 @@ async function changePassword() {
 // ══════════════════════════════════════════════════════
 //  NAVIGATION
 // ══════════════════════════════════════════════════════
-const PAGE_TITLES = { dashboard:'Dashboard', products:'Products', inventory:'Inventory', orders:'Orders', settings:'Settings' };
-const PAGE_ACTIONS = {
-  products: `<button class="topbar-btn topbar-btn-primary" onclick="openAddProduct()">+ Add Product</button>`,
-  inventory: `<button class="topbar-btn topbar-btn-secondary" onclick="loadVariants()">🔄 Refresh</button>`,
-  orders: `<button class="topbar-btn topbar-btn-secondary" onclick="loadOrders()">🔄 Refresh</button>`,
-};
 
 function navigate(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
