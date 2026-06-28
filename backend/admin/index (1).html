@@ -605,7 +605,7 @@ let CURRENT_ORDER_FILTER = 'all';
 // ══════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════
-(function init() {
+document.addEventListener('DOMContentLoaded', function init() {
   if (TOKEN) {
     showApp();
   } else {
@@ -627,7 +627,7 @@ let CURRENT_ORDER_FILTER = 'all';
     if (e.target.value) { img.src = e.target.value; img.style.display = 'block'; }
     else img.style.display = 'none';
   });
-})();
+});
 
 // ══════════════════════════════════════════════════════
 //  AUTH
