@@ -666,8 +666,8 @@ function logout() {
 // ══════════════════════════════════════════════════════
 //  NAVIGATION CONSTANTS (must be before showApp/navigate)
 // ══════════════════════════════════════════════════════
-const PAGE_TITLES = { dashboard:'Dashboard', products:'Products', inventory:'Inventory', orders:'Orders', settings:'Settings' };
-const PAGE_ACTIONS = {
+var PAGE_TITLES = { dashboard:'Dashboard', products:'Products', inventory:'Inventory', orders:'Orders', settings:'Settings' };
+var PAGE_ACTIONS = {
   products: `<button class="topbar-btn topbar-btn-primary" onclick="openAddProduct()">+ Add Product</button>`,
   inventory: `<button class="topbar-btn topbar-btn-secondary" onclick="loadVariants()">🔄 Refresh</button>`,
   orders: `<button class="topbar-btn topbar-btn-secondary" onclick="loadOrders()">🔄 Refresh</button>`,
