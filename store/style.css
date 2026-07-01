@@ -1,5 +1,5 @@
 /* ============================================================
-   NEW MAX — Modern E-Commerce Stylesheet
+   PHI — Modern E-Commerce Stylesheet
    Colors: Light Blue (#3B82F6) + Red (#EF4444) + Deep Blue (#1E3A5F)
    Features: Dark mode, RTL support, smooth animations, glassmorphism
    ============================================================ */
@@ -313,19 +313,15 @@ body.dark .navbar {
   cursor: pointer;
 }
 
-#New { color: var(--blue-light); }
-#Max { color: var(--red-primary); }
+#logo img {
+  width: 115px;
+  height: auto;
+  display: block;
+  transform: scale(1.08);
+}
 
 #logo:hover {
   transform: scale(1.03);
-}
-
-#New {
-  color: var(--blue-light);
-}
-
-#Max {
-  color: var(--red-primary);
 }
 
 .nav-links {
@@ -3243,9 +3239,9 @@ body.rtl-active .conf-total-row {
 }
 
 /* ============================================================
-   NEW MAX — v3 Additions
+   PHI — v3 Additions
    Added: toast, ratings, availability, price-save, qty controls,
-          product-desc, nm-warning, item-color-dot, sr-only,
+          product-desc, phi-warning, item-color-dot, sr-only,
           dark-mode badge fixes, filter price group improvements
    ============================================================ */
 
@@ -3263,7 +3259,7 @@ body.rtl-active .conf-total-row {
 }
 
 /* --- Toast notification --- */
-#nm-toast {
+#phi-toast {
   position: fixed;
   bottom: 90px;
   left: 50%;
@@ -3285,11 +3281,11 @@ body.rtl-active .conf-total-row {
   max-width: 90vw;
   text-align: center;
 }
-#nm-toast.show {
+#phi-toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-body.dark #nm-toast {
+body.dark #phi-toast {
   background: var(--color-primary);
 }
 
@@ -3456,8 +3452,8 @@ body.dark .qty-btn:hover {
   margin-top: 2px;
 }
 
-/* --- nm-warning (validation inline) --- */
-.nm-warning {
+/* --- phi-warning (validation inline) --- */
+.phi-warning {
   font-size: 0.78rem;
   color: #dc2626;
   background: #fee2e2;
@@ -3466,7 +3462,7 @@ body.dark .qty-btn:hover {
   margin-top: 4px;
   animation: fadeInWarning 0.2s ease;
 }
-body.dark .nm-warning {
+body.dark .phi-warning {
   background: #7f1d1d;
   color: #fca5a5;
 }
@@ -3674,7 +3670,7 @@ html {
 }
 
 /* ============================================================
-   NEW MAX — v4 Additions
+   PHI — v4 Additions
    Added: New Arrivals, Special Offers, Product Detail Modal,
           Size Guide, Image Zoom, Stock Indicators, Toast Fix
    ============================================================ */
@@ -4344,7 +4340,7 @@ body.rtl-active .size-guide-note {
 }
 
 /* --- Toast Fix --- */
-#nm-toast {
+#phi-toast {
   position: fixed;
   bottom: 90px;
   left: 50%;
@@ -4366,11 +4362,11 @@ body.rtl-active .size-guide-note {
   max-width: 90vw;
   text-align: center;
 }
-#nm-toast.show {
+#phi-toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-body.dark #nm-toast {
+body.dark #phi-toast {
   background: var(--blue-medium);
 }
 
@@ -4404,7 +4400,7 @@ body.dark #nm-toast {
 }
 
 /* ============================================================
-   NEW MAX — v5 Production Upgrade Additions
+   PHI — v5 Production Upgrade Additions
    Added: Skeleton loading, Scroll reveal, Search suggestions,
           Quantity selector, Related products, Product reviews,
           Sticky mobile CTA, Loading spinners, Skip link,

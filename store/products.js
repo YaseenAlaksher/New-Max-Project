@@ -1,5 +1,5 @@
 // ============================================================
-//  NEW MAX — Product Data Layer  |  products.js
+//  PHI — Product Data Layer  |  products.js
 //  Edit this file to add, update, or remove products.
 //  All rendering is handled automatically by script.js.
 //

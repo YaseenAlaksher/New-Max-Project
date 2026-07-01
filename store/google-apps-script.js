@@ -1,5 +1,5 @@
 // ============================================================
-//  NEW MAX — Google Apps Script   (v2 — adds live inventory)
+//  PHI — Google Apps Script   (v2 — adds live inventory)
 //  الصق الكود ده في Google Apps Script وانشره كـ Web App
 //
 //  لو عندك نسخة قديمة شغالة بالفعل (الموقع شغال ومتربط بشيت):
@@ -90,7 +90,7 @@ function doGet(e) {
   }
 
   return ContentService
-    .createTextOutput('✅ New Max Sheets API — شغال!')
+    .createTextOutput('✅ PHI Sheets API — شغال!')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 

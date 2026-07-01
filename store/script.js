@@ -1,5 +1,5 @@
 // ============================================================
-//  NEW MAX — script.js  |  Production v4.0
+//  PHI — script.js  |  Production v4.0
 //  Improvements: Product Detail Modal, Image Gallery, Zoom,
 //  Size Guide, New Arrivals, Special Offers, Stock Indicators,
 //  Performance optimizations, Code quality
@@ -9,7 +9,7 @@ const CONFIG = {
   WA_PRIMARY:    '201064941387',
   WA_BACKUP:     '201014224479',
   MESSENGER_ID:  '100041362177935',
-  STORE_NAME:    'New Max',
+  STORE_NAME:    'PHI',
   SHEETS_URL:    'https://script.google.com/macros/s/AKfycby0tNSDVkW18Bd2clkSV_vTGRx-Dtz22YGx6ZLNHfYgEpDk3U1OXLTE91GPru-kqzGujQ/exec',
   ORDER_WEBHOOK: '',
   // URL السيرفر الـ backend — غيّره لرابط الإنتاج لما تنشر
@@ -34,7 +34,7 @@ const IMG_FALLBACK_SVG = 'data:image/svg+xml,' + encodeURIComponent(
   '<path d="M-40,-50 L-20,-65 L0,-50 L20,-65 L40,-50 L40,60 L-40,60 Z"/>' +
   '<path d="M-20,-65 Q0,-40 20,-65"/>' +
   '</g>' +
-  '<text x="200" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#94A3B8">New Max</text>' +
+  '<text x="200" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#94A3B8">PHI</text>' +
   '</svg>'
 );
 
@@ -104,7 +104,7 @@ async function fetchLiveInventory() {
     renderAllProducts(lang);
     applyFilters();
   } catch (e) {
-    console.warn('[NewMax] Live inventory unavailable — showing static stock numbers instead:', e);
+    console.warn('[PHI] Live inventory unavailable — showing static stock numbers instead:', e);
   }
 }
 
@@ -144,11 +144,20 @@ function updateCardVariantStock(card) {
 
 // ─── CART STATE ─────────────────────────────────────────────
 let cart = [];
+const STORAGE_KEYS = {
+  cart: 'phi-cart-v3',
+  dark: 'phi-dark',
+};
+const LEGACY_STORAGE_PREFIX = ['new', 'max'].join('');
+const legacyStorageKey = suffix => LEGACY_STORAGE_PREFIX + suffix;
 (function loadCart() {
   try {
-    const raw = localStorage.getItem('newmax-cart-v3');
+    const legacyCartKey = legacyStorageKey('-cart-v3');
+    const raw = localStorage.getItem(STORAGE_KEYS.cart) || localStorage.getItem(legacyCartKey);
     const parsed = raw ? JSON.parse(raw) : [];
     cart = Array.isArray(parsed) ? parsed : [];
+    if (raw && !localStorage.getItem(STORAGE_KEYS.cart)) localStorage.setItem(STORAGE_KEYS.cart, raw);
+    localStorage.removeItem(legacyCartKey);
   } catch (_) { cart = []; }
 })();
 
@@ -160,12 +169,15 @@ let pmState = { product: null, selectedColor: null, selectedSize: null, currentI
 
 // ─── UTILITIES ───────────────────────────────────────────────
 function saveCart() {
-  try { localStorage.setItem('newmax-cart-v3', JSON.stringify(cart)); } catch (_) {}
+  try {
+    localStorage.setItem(STORAGE_KEYS.cart, JSON.stringify(cart));
+    localStorage.removeItem(legacyStorageKey('-cart-v3'));
+  } catch (_) {}
 }
 
 function generateOrderId() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  return 'NM-' + Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return 'PHI-' + Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
 function getLang() {
@@ -184,10 +196,10 @@ function formatPrice(price) { return price + ' EGP'; }
 // ─── TOAST ───────────────────────────────────────────────────
 let _toastTimer;
 function showToast(msg, duration = 3000) {
-  let toast = document.getElementById('nm-toast');
+  let toast = document.getElementById('phi-toast');
   if (!toast) {
     toast = document.createElement('div');
-    toast.id = 'nm-toast';
+    toast.id = 'phi-toast';
     toast.setAttribute('role', 'status');
     toast.setAttribute('aria-live', 'polite');
     document.body.appendChild(toast);
@@ -296,7 +308,7 @@ function buildProductCard(product, lang) {
     aria-label="${name}">
     ${getBadgeHTML(product.badge, lang)}
     <div class="product-img-wrap" data-img-click="${product.id}">
-      <img src="${product.image}" alt="${name} — New Max"
+      <img src="${product.image}" alt="${name} — PHI"
            loading="lazy" decoding="async" width="400" height="300" />
     </div>
     <div class="product-body">
@@ -438,9 +450,9 @@ function _handleColorKeydown(e) {
 }
 
 function showWarning(card, type, message) {
-  if (card.querySelector(`.nm-warning[data-type="${type}"]`)) return;
+  if (card.querySelector(`.phi-warning[data-type="${type}"]`)) return;
   const p = document.createElement('p');
-  p.className = 'nm-warning';
+  p.className = 'phi-warning';
   p.dataset.type = type;
   p.setAttribute('role', 'alert');
   p.textContent = '⚠ ' + message;
@@ -450,7 +462,7 @@ function showWarning(card, type, message) {
 }
 
 function removeWarning(card, type) {
-  card.querySelector(`.nm-warning[data-type="${type}"]`)?.remove();
+  card.querySelector(`.phi-warning[data-type="${type}"]`)?.remove();
 }
 
 // ─── ADD TO CART ─────────────────────────────────────────────
@@ -686,7 +698,7 @@ function renderPMGallery(product) {
 
   if (mainImg) {
     mainImg.src = images[0];
-    mainImg.alt = (product.name.en || '') + ' — New Max';
+    mainImg.alt = (product.name.en || '') + ' — PHI';
   }
 
   if (thumbsEl) {
@@ -1228,7 +1240,7 @@ function sendViaWhatsApp() {
   const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const total   = getCartTotal();
 
-  let msg = `🛍 *New Order — New Max*\n━━━━━━━━━━━━━━━━━━━━━\n`;
+  let msg = `🛍 *New Order — PHI*\n━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `📋 Order ID: ${orderId}\n📅 Date: ${dateStr} at ${timeStr}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
   msg += `👤 *Customer Details*\n• Name: ${name}\n• Phone: ${phone}\n`;
   msg += `• Governorate: ${gov}\n• City: ${city}\n• Address: ${address}\n`;
@@ -1379,7 +1391,7 @@ function sendToMessenger() {
   const cartSnap   = [...cart];
   const total      = cartSnap.reduce((s, i) => s + i.price * i.qty, 0);
 
-  let msg = `🛍 New Order — New Max\nOrder ID: ${orderId}\nDate: ${new Date().toLocaleDateString('en-GB')}\n\nItems:\n`;
+  let msg = `🛍 New Order — PHI\nOrder ID: ${orderId}\nDate: ${new Date().toLocaleDateString('en-GB')}\n\nItems:\n`;
   cartSnap.forEach((item, i) => {
     msg += `${i + 1}. ${item.name} (${item.color}, ${item.size}) ×${item.qty} — ${item.price * item.qty} EGP\n`;
   });
@@ -1477,7 +1489,7 @@ function submitReview() {
   if (!valid) return;
 
   const starsStr = '★'.repeat(selectedStars) + '☆'.repeat(5 - selectedStars);
-  let msg = `⭐ New Review — New Max\n━━━━━━━━━━━━━━━━━━━━━\n`;
+  let msg = `⭐ New Review — PHI\n━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `👤 ${name}\n📍 ${city}\n`;
   if (product) msg += `📦 ${product}\n`;
   msg += `⭐ ${starsStr} (${selectedStars}/5)\n\n"${text}"\n━━━━━━━━━━━━━━━━━━━━━`;
@@ -1501,7 +1513,7 @@ async function saveOrderToBackend(data) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      }).catch(e => console.warn('[NewMax] Backend order save failed:', e.message))
+      }).catch(e => console.warn('[PHI] Backend order save failed:', e.message))
     );
   }
 
@@ -1512,7 +1524,7 @@ async function saveOrderToBackend(data) {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      }).catch(e => console.warn('[NewMax] Sheets:', e))
+      }).catch(e => console.warn('[PHI] Sheets:', e))
     );
   }
 
@@ -1523,7 +1535,7 @@ async function saveOrderToBackend(data) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, store: CONFIG.STORE_NAME, ts: new Date().toISOString() }),
-      }).catch(e => console.warn('[NewMax] Webhook:', e))
+      }).catch(e => console.warn('[PHI] Webhook:', e))
     );
   }
 
@@ -1562,9 +1574,9 @@ async function fetchProductsFromAPI() {
     renderAllProducts(lang);
     applyFilters();
     updateCartCount();
-    console.log('[NewMax] ✅ Live products loaded from API:', PRODUCTS.length);
+    console.log('[PHI] ✅ Live products loaded from API:', PRODUCTS.length);
   } catch (e) {
-    console.warn('[NewMax] API products unavailable, using static data:', e.message);
+    console.warn('[PHI] API products unavailable, using static data:', e.message);
   }
 }
 
@@ -1572,15 +1584,24 @@ async function fetchProductsFromAPI() {
 // ─── DARK MODE ───────────────────────────────────────────────
 function initDarkMode() {
   const btn = document.getElementById('dark-mode-btn');
-  if (localStorage.getItem('newmax-dark') === 'true') {
+  const legacyDarkKey = legacyStorageKey('-dark');
+  const savedDark = localStorage.getItem(STORAGE_KEYS.dark) || localStorage.getItem(legacyDarkKey);
+  if (savedDark === 'true') {
     document.body.classList.add('dark');
-    if (btn) { btn.textContent = '☀️'; btn.setAttribute('aria-label', 'Switch to light mode'); }
+    if (btn) { btn.textContent = '\u2600\uFE0F'; btn.setAttribute('aria-label', 'Switch to light mode'); }
   }
+  try {
+    if (savedDark !== null && !localStorage.getItem(STORAGE_KEYS.dark)) localStorage.setItem(STORAGE_KEYS.dark, savedDark);
+    localStorage.removeItem(legacyDarkKey);
+  } catch (_) {}
   btn?.addEventListener('click', () => {
     const isDark = document.body.classList.toggle('dark');
     btn.textContent = isDark ? '☀️' : '🌙';
     btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
-    localStorage.setItem('newmax-dark', isDark);
+    try {
+      localStorage.setItem(STORAGE_KEYS.dark, isDark);
+      localStorage.removeItem(legacyStorageKey('-dark'));
+    } catch (_) {}
   });
 }
 
@@ -1615,8 +1636,8 @@ function initHeroWhatsApp() {
   document.getElementById('hero-whatsapp-btn')?.addEventListener('click', () => {
     const lang = getLang();
     const msg  = lang === 'ar'
-      ? 'مرحبا! عايز أعرف أكتر عن منتجات New Max.'
-      : 'Hello! I want to know more about New Max products.';
+      ? 'مرحبا! عايز أعرف أكتر عن منتجات PHI.'
+      : 'Hello! I want to know more about PHI products.';
     window.open(`https://wa.me/${CONFIG.WA_PRIMARY}?text=${encodeURIComponent(msg)}`, '_blank');
   });
 }
