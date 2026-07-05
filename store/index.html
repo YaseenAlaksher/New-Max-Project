@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#0f172a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -25,15 +25,17 @@
     />
     <meta name="author" content="PHI" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://PHI-project.netlify.app/" />
+    <link rel="canonical" href="https://phi-project.netlify.app/" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="images/favicon.png?v=3" />
     <link rel="apple-touch-icon" href="images/favicon.png?v=3" />
+    <link rel="manifest" href="manifest.webmanifest?v=10" />
+    <meta name="application-name" content="PHI" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://PHI-project.netlify.app/" />
+    <meta property="og:url" content="https://phi-project.netlify.app/" />
     <meta
       property="og:title"
       content="PHI | Premium Sportswear — Cash on Delivery"
@@ -44,7 +46,7 @@
     />
     <meta
       property="og:image"
-      content="https://PHI-project.netlify.app/images/og-cover.jpg?v=3"
+      content="https://phi-project.netlify.app/images/og-cover.jpg?v=3"
     />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -62,7 +64,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://PHI-project.netlify.app/images/og-cover.jpg?v=3"
+      content="https://phi-project.netlify.app/images/og-cover.jpg?v=3"
     />
 
     <!-- Schema.org -->
@@ -72,7 +74,7 @@
         "@type": "ClothingStore",
         "name": "PHI",
         "description": "Premium sportswear in Egypt — Cash on delivery, nationwide shipping",
-        "url": "https://PHI-project.netlify.app/",
+        "url": "https://phi-project.netlify.app/",
         "telephone": "+201064941387",
         "address": { "@type": "PostalAddress", "addressCountry": "EG" },
         "priceRange": "50 EGP - 200 EGP",
@@ -83,12 +85,12 @@
       }
     </script>
 
-    <link rel="preload" href="style.css?v=9" as="style" />
-    <link rel="stylesheet" href="style.css?v=9" />
+    <link rel="preload" href="style.css?v=10" as="style" />
+    <link rel="stylesheet" href="style.css?v=10" />
 
     <!-- Load products data before script.js -->
-    <script src="products.js?v=9" defer></script>
-    <script src="script.js?v=9" defer></script>
+    <script src="products.js?v=10" defer></script>
+    <script src="script.js?v=10" defer></script>
   </head>
 
   <body>
@@ -1089,12 +1091,33 @@
                 placeholder="Any special instructions for delivery..."
               />
             </div>
+            <div class="payment-method-group" role="group" aria-label="Payment method">
+              <p class="payment-method-title">Payment Method</p>
+              <label class="payment-method-card">
+                <input type="radio" name="co-payment" value="cod" checked />
+                <span>
+                  <strong>Cash on Delivery</strong>
+                  <small>Pay only when your order arrives.</small>
+                </span>
+              </label>
+              <label class="payment-method-card">
+                <input type="radio" name="co-payment" value="vodafone-cash" />
+                <span>
+                  <strong>Vodafone Cash</strong>
+                  <small>Team confirms wallet details before shipping.</small>
+                </span>
+              </label>
+              <label class="payment-method-card">
+                <input type="radio" name="co-payment" value="instapay" />
+                <span>
+                  <strong>InstaPay</strong>
+                  <small>Transfer details are confirmed after order review.</small>
+                </span>
+              </label>
+            </div>
             <div class="checkout-cod-note">
-              <span class="cod-icon" aria-hidden="true">💵</span>
-              <span
-                ><strong>Cash on Delivery</strong> — You pay only when your
-                order arrives.</span
-              >
+              <span class="cod-icon" aria-hidden="true">🚚</span>
+              <span><strong>Fast Delivery</strong> — Shipping is calculated automatically before confirmation.</span>
             </div>
           </div>
           <button class="btn-checkout btn-checkout-full" id="checkout-next-btn">
@@ -1127,7 +1150,7 @@
               <span>Subtotal</span><span id="review-subtotal">0 EGP</span>
             </div>
             <div class="receipt-totals-row">
-              <span>Shipping</span><span class="receipt-free">Free 🎉</span>
+              <span>Shipping</span><span class="receipt-free" id="review-shipping">Free</span>
             </div>
             <div class="receipt-totals-row receipt-grand-total">
               <span>Total</span><span id="review-total">0 EGP</span>

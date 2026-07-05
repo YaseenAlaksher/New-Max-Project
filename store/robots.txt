@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://phi-project.netlify.app/sitemap.xml

@@ -5478,3 +5478,56 @@ body.rtl-active .collection-footer {
     justify-content: center;
   }
 }
+
+
+/* PHI - Sale-ready checkout payment options */
+.payment-method-group {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+
+.payment-method-title {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text, #0f172a);
+}
+
+.payment-method-card {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  border: 1.5px solid rgba(15, 23, 42, 0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+}
+
+.payment-method-card:has(input:checked) {
+  border-color: var(--accent, #2563eb);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.payment-method-card input {
+  margin-top: 3px;
+  accent-color: var(--accent, #2563eb);
+}
+
+.payment-method-card strong,
+.payment-method-card small {
+  display: block;
+}
+
+.payment-method-card small {
+  color: var(--muted, #64748b);
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+body.dark .payment-method-card {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.24);
+}

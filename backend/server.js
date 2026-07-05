@@ -363,6 +363,28 @@ function normalizeVariants(variants) {
     .filter(variant => variant.size && variant.color_name);
 }
 
+function csvCell(value) {
+  const text = value === undefined || value === null ? '' : String(value);
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function ordersQuery({ status, search }) {
+  const where = [];
+  const params = [];
+  if (status && status !== 'all') {
+    where.push('status = ?');
+    params.push(status);
+  }
+  if (search) {
+    where.push('(id LIKE ? OR customer_name LIKE ? OR customer_phone LIKE ?)');
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+  return {
+    sql: `SELECT * FROM orders ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY created_at DESC`,
+    params,
+  };
+}
+
 function normalizeProductPayload(body) {
   const price = safeNumber(body.price, NaN);
   const originalPrice = body.original_price === '' || body.original_price === undefined || body.original_price === null
@@ -713,26 +735,48 @@ app.delete('/api/inventory/variants/:id', requireAuth, (req, res) => {
 
 // Orders -------------------------------------------------------
 app.get('/api/orders', requireAuth, (req, res) => {
-  const status = safeText(req.query.status, 30);
-  const search = safeText(req.query.search, 160);
-  const where = [];
-  const params = [];
-
-  if (status && status !== 'all') {
-    where.push('status = ?');
-    params.push(status);
-  }
-  if (search) {
-    where.push('(id LIKE ? OR customer_name LIKE ? OR customer_phone LIKE ?)');
-    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-  }
-
-  const sql = `SELECT * FROM orders ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY created_at DESC`;
-  const rows = db.prepare(sql).all(...params);
+  const query = ordersQuery({
+    status: safeText(req.query.status, 30),
+    search: safeText(req.query.search, 160),
+  });
+  const rows = db.prepare(query.sql).all(...query.params);
   res.json(rows.map(order => ({
     ...order,
     items: db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id),
   })));
+});
+
+app.get('/api/orders/export.csv', requireAuth, (req, res) => {
+  const query = ordersQuery({
+    status: safeText(req.query.status, 30),
+    search: safeText(req.query.search, 160),
+  });
+  const orders = db.prepare(query.sql).all(...query.params);
+  const rows = [
+    ['Order ID', 'Customer', 'Phone', 'Governorate', 'City', 'Address', 'Total', 'Payment', 'Status', 'Created At', 'Items'],
+  ];
+
+  orders.forEach(order => {
+    const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+    rows.push([
+      order.id,
+      order.customer_name,
+      order.customer_phone,
+      order.customer_gov,
+      order.customer_city,
+      order.customer_address,
+      order.total,
+      order.payment,
+      order.status,
+      order.created_at,
+      items.map(item => `${item.product_name} x${item.qty} (${item.color}/${item.size})`).join(' | '),
+    ]);
+  });
+
+  const csv = rows.map(row => row.map(csvCell).join(',')).join('\n');
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="phi-orders.csv"');
+  res.send('\uFEFF' + csv);
 });
 
 app.get('/api/orders/:id', requireAuth, (req, res) => {

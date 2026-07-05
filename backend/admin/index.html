@@ -698,7 +698,7 @@ var PAGE_TITLES = { dashboard:'Dashboard', products:'Products', inventory:'Inven
 var PAGE_ACTIONS = {
   products: `<button class="topbar-btn topbar-btn-primary" onclick="openAddProduct()">+ Add Product</button>`,
   inventory: `<button class="topbar-btn topbar-btn-secondary" onclick="loadVariants()">🔄 Refresh</button>`,
-  orders: `<button class="topbar-btn topbar-btn-secondary" onclick="loadOrders()">🔄 Refresh</button>`,
+  orders: `<button class="topbar-btn topbar-btn-secondary" onclick="loadOrders()">🔄 Refresh</button><button class="topbar-btn topbar-btn-primary" onclick="exportOrders()">⬇ Export CSV</button>`,
 };
 
 function showApp() {
@@ -1104,6 +1104,31 @@ function filterOrders(status, btn) {
   document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   loadOrders();
+}
+
+async function exportOrders() {
+  try {
+    const orderSearch = document.getElementById('order-search')?.value.trim() || '';
+    const params = new URLSearchParams();
+    if (CURRENT_ORDER_FILTER !== 'all') params.set('status', CURRENT_ORDER_FILTER);
+    if (orderSearch) params.set('search', orderSearch);
+    const res = await fetch(API + '/api/orders/export.csv' + (params.toString() ? '?' + params.toString() : ''), {
+      headers: TOKEN ? { Authorization: 'Bearer ' + TOKEN } : {},
+    });
+    if (!res.ok) throw new Error('Export failed: ' + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'phi-orders.csv';
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+    toast('Orders exported', 'success');
+  } catch (e) {
+    toast(e.message, 'error');
+  }
 }
 
 async function updateOrderStatus(id, status) {

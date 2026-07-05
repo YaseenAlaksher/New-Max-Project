@@ -263,6 +263,42 @@ const SORT_OPTIONS = [
 
 const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'One Size'];
 
+const PAYMENT_METHODS = {
+  cod: { en: 'Cash on Delivery', ar: 'الدفع عند الاستلام' },
+  'vodafone-cash': { en: 'Vodafone Cash', ar: 'فودافون كاش' },
+  instapay: { en: 'InstaPay', ar: 'إنستاباي' },
+};
+
+const SHIPPING_FEES = {
+  Cairo: 0,
+  Giza: 0,
+  Qalyubia: 0,
+  Alexandria: 60,
+  'Port Said': 60,
+  Suez: 60,
+  Dakahlia: 70,
+  Sharqia: 70,
+  Gharbia: 70,
+  Monufia: 70,
+  Beheira: 70,
+  'Kafr El Sheikh': 70,
+  Damietta: 70,
+  Ismailia: 70,
+  Faiyum: 80,
+  'Beni Suef': 80,
+  Minya: 90,
+  Asyut: 90,
+  Sohag: 100,
+  Qena: 100,
+  Luxor: 110,
+  Aswan: 110,
+  'Red Sea': 120,
+  'New Valley': 130,
+  Matrouh: 120,
+  'North Sinai': 130,
+  'South Sinai': 130,
+};
+
 function slugifyValue(value) {
   return String(value || '')
     .trim()
@@ -1568,13 +1604,16 @@ function goToReview() {
   const city    = document.getElementById('co-city').value.trim();
   const address = document.getElementById('co-address').value.trim();
   const notes   = document.getElementById('co-notes')?.value.trim() || '';
+  const payment = getSelectedPaymentMethod();
+  const totals = getOrderTotals(gov);
   const separator = sep(lang);
 
   document.getElementById('review-customer-info').innerHTML = `
     <p class="review-delivery-label">${lang === 'ar' ? 'تفاصيل التوصيل' : 'Delivery Details'}</p>
     <strong>${name}</strong> · ${phone}<br>
     ${gov}${separator}${city}<br>
-    ${address}${notes ? `<br><em>${lang === 'ar' ? 'ملاحظات: ' : 'Notes: '}${notes}</em>` : ''}`;
+    ${address}<br>
+    <em>${lang === 'ar' ? 'طريقة الدفع: ' : 'Payment: '}${lang === 'ar' ? payment.ar : payment.en}</em>${notes ? `<br><em>${lang === 'ar' ? 'ملاحظات: ' : 'Notes: '}${notes}</em>` : ''}`;
 
   document.getElementById('review-items-body').innerHTML = cart.map((item, i) => {
     const n = lang === 'ar' ? (item.nameAr || item.name) : item.name;
@@ -1591,9 +1630,9 @@ function goToReview() {
     </tr>`;
   }).join('');
 
-  const total = getCartTotal();
-  const rs = document.getElementById('review-subtotal'); if (rs) rs.textContent = total + ' EGP';
-  const rt = document.getElementById('review-total');    if (rt) rt.textContent = total + ' EGP';
+  const rs = document.getElementById('review-subtotal'); if (rs) rs.textContent = totals.subtotal + ' EGP';
+  const rship = document.getElementById('review-shipping'); if (rship) rship.textContent = formatShipping(totals.shipping, lang);
+  const rt = document.getElementById('review-total');    if (rt) rt.textContent = totals.total + ' EGP';
 
   const s1 = document.getElementById('checkout-step-1');
   const s2 = document.getElementById('checkout-step-2');
@@ -1646,6 +1685,27 @@ function validateField(el) {
   return valid;
 }
 
+function getSelectedPaymentMethod() {
+  const value = document.querySelector('input[name="co-payment"]:checked')?.value || 'cod';
+  const method = PAYMENT_METHODS[value] || PAYMENT_METHODS.cod;
+  return { id: value, ...method };
+}
+
+function getShippingFee(governorate) {
+  return Number(SHIPPING_FEES[governorate] || 0);
+}
+
+function getOrderTotals(governorate) {
+  const subtotal = getCartTotal();
+  const shipping = getShippingFee(governorate);
+  return { subtotal, shipping, total: subtotal + shipping };
+}
+
+function formatShipping(shipping, lang) {
+  if (!shipping) return lang === 'ar' ? 'مجاني' : 'Free';
+  return shipping + ' EGP';
+}
+
 function validateCheckoutForm() {
   return ['co-name', 'co-phone', 'co-gov', 'co-city', 'co-address'].every(id => {
     const el = document.getElementById(id);
@@ -1666,7 +1726,9 @@ function sendViaWhatsApp() {
   const now     = new Date();
   const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-  const total   = getCartTotal();
+  const payment = getSelectedPaymentMethod();
+  const totals  = getOrderTotals(gov);
+  const total   = totals.total;
 
   let msg = `🛍 *New Order — PHI*\n━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `📋 Order ID: ${orderId}\n📅 Date: ${dateStr} at ${timeStr}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -1677,14 +1739,15 @@ function sendViaWhatsApp() {
   cart.forEach((item, i) => {
     msg += `${i + 1}. ${item.name} (${item.color}, ${item.size}) ×${item.qty} — ${item.price * item.qty} EGP\n`;
   });
-  msg += `\n━━━━━━━━━━━━━━━━━━━━━\n💰 *Total: ${total} EGP*\n`;
-  msg += `🚚 Shipping: Free\n💵 Payment: Cash on Delivery\n━━━━━━━━━━━━━━━━━━━━━\nThank you! 🙏`;
+  msg += `\n━━━━━━━━━━━━━━━━━━━━━\n💰 Subtotal: ${totals.subtotal} EGP\n`;
+  msg += `🚚 Shipping: ${formatShipping(totals.shipping, 'en')}\n💵 Payment: ${payment.en}\n💰 *Total: ${total} EGP*\n━━━━━━━━━━━━━━━━━━━━━\nThank you! 🙏`;
 
   const orderData = {
     type: 'order', orderId, dateStr, timeStr,
     customer: { name, phone, gov, city, address, notes },
     items: cart.map(i => ({ productId: i.productId, name: i.name, color: i.color, size: i.size, qty: i.qty, price: i.price })),
-    total, payment: 'Cash on Delivery', status: 'New',
+    subtotal: totals.subtotal, shipping: totals.shipping,
+    total, payment: payment.en, paymentMethod: payment.id, status: 'New',
   };
 
   closeCheckout();
@@ -2840,6 +2903,12 @@ function initAll(lang) {
 document.addEventListener('DOMContentLoaded', () => {
   initAll(getLang());
 });
+
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => undefined);
+  });
+}
 
 // Called by the inline lang script after language switch
 window.onLangChange = function (lang) {

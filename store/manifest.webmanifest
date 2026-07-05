@@ -1,0 +1,30 @@
+{
+  "name": "PHI Sportswear",
+  "short_name": "PHI",
+  "description": "Premium sportswear in Egypt with fast delivery and flexible payment options.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "categories": [
+    "shopping",
+    "lifestyle",
+    "sports"
+  ],
+  "icons": [
+    {
+      "src": "images/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/og-cover.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
