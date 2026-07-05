@@ -83,12 +83,12 @@
       }
     </script>
 
-    <link rel="preload" href="style.css?v=8" as="style" />
-    <link rel="stylesheet" href="style.css?v=8" />
+    <link rel="preload" href="style.css?v=9" as="style" />
+    <link rel="stylesheet" href="style.css?v=9" />
 
     <!-- Load products data before script.js -->
-    <script src="products.js?v=8" defer></script>
-    <script src="script.js?v=8" defer></script>
+    <script src="products.js?v=9" defer></script>
+    <script src="script.js?v=9" defer></script>
   </head>
 
   <body>
@@ -555,169 +555,75 @@
         </div>
 
         <!-- FILTER BAR -->
-        <div class="filter-bar" role="search" aria-label="Filter products">
-          <div class="filter-group">
+        <div class="filter-bar collection-controls" role="search" aria-label="Filter products">
+          <div class="filter-group category-filter-group">
             <span class="filter-label" id="label-category">Category:</span>
-            <div role="group" aria-labelledby="label-category">
-              <button
-                class="filter-btn active"
-                data-group="category"
-                data-value="all"
-                aria-pressed="true"
-              >
-                All
-              </button>
-              <button
-                class="filter-btn"
-                data-group="category"
-                data-value="tops"
-                aria-pressed="false"
-              >
-                Tops
-              </button>
-              <button
-                class="filter-btn"
-                data-group="category"
-                data-value="bottoms"
-                aria-pressed="false"
-              >
-                Bottoms
-              </button>
-              <button
-                class="filter-btn"
-                data-group="category"
-                data-value="outerwear"
-                aria-pressed="false"
-              >
-                Outerwear
-              </button>
-              <button
-                class="filter-btn"
-                data-group="category"
-                data-value="accessories"
-                aria-pressed="false"
-              >
-                Accessories
-              </button>
-            </div>
+            <div
+              class="filter-options category-options"
+              id="category-filter-options"
+              role="group"
+              aria-labelledby="label-category"
+            ></div>
           </div>
           <div class="filter-group">
             <span class="filter-label" id="label-size">Size:</span>
-            <div role="group" aria-labelledby="label-size">
-              <button
-                class="filter-btn active"
-                data-group="size"
-                data-value="all"
-                aria-pressed="true"
-              >
-                All
-              </button>
-              <button
-                class="filter-btn"
-                data-group="size"
-                data-value="S"
-                aria-pressed="false"
-              >
-                S
-              </button>
-              <button
-                class="filter-btn"
-                data-group="size"
-                data-value="M"
-                aria-pressed="false"
-              >
-                M
-              </button>
-              <button
-                class="filter-btn"
-                data-group="size"
-                data-value="L"
-                aria-pressed="false"
-              >
-                L
-              </button>
-              <button
-                class="filter-btn"
-                data-group="size"
-                data-value="XL"
-                aria-pressed="false"
-              >
-                XL
-              </button>
-            </div>
+            <div
+              class="filter-options"
+              id="size-filter-options"
+              role="group"
+              aria-labelledby="label-size"
+            ></div>
           </div>
           <div class="filter-group filter-color-group">
             <span class="filter-label" id="label-color">Color:</span>
-            <div role="group" aria-labelledby="label-color">
-              <button
-                class="filter-btn active"
-                data-group="color"
-                data-value="all"
-                aria-pressed="true"
-              >
-                All
-              </button>
-              <button
-                class="filter-btn filter-color-btn"
-                data-group="color"
-                data-value="red"
-                aria-pressed="false"
-                aria-label="Red"
-              >
-                <span
-                  class="filter-color-swatch"
-                  style="background: #dc2626"
-                ></span>
-                Red
-              </button>
-              <button
-                class="filter-btn filter-color-btn"
-                data-group="color"
-                data-value="blue"
-                aria-pressed="false"
-                aria-label="Blue"
-              >
-                <span
-                  class="filter-color-swatch"
-                  style="background: #2563eb"
-                ></span>
-                Blue
-              </button>
-              <button
-                class="filter-btn filter-color-btn"
-                data-group="color"
-                data-value="black"
-                aria-pressed="false"
-                aria-label="Black"
-              >
-                <span
-                  class="filter-color-swatch"
-                  style="background: #1e293b"
-                ></span>
-                Black
-              </button>
-            </div>
+            <div
+              class="filter-options"
+              id="color-filter-options"
+              role="group"
+              aria-labelledby="label-color"
+            ></div>
           </div>
           <div class="filter-group filter-price-group">
-            <span class="filter-label"
-              >Price: <strong id="price-val">300 EGP</strong></span
+            <span class="filter-label" id="label-price"
+              >Price: <strong id="price-val">All</strong></span
             >
             <input
               type="range"
               id="price-range"
-              min="50"
+              min="0"
               max="2000"
               value="2000"
               step="10"
               aria-label="Maximum price filter"
-              aria-valuemin="50"
+              aria-valuemin="0"
               aria-valuemax="2000"
               aria-valuenow="2000"
             />
           </div>
+          <div class="collection-toolbar" aria-label="Collection controls">
+            <label class="collection-select-label" for="sort-select">
+              <span id="label-sort">Sort</span>
+              <select id="sort-select" class="collection-select" aria-label="Sort products">
+                <option value="featured">Featured</option>
+                <option value="newest">Newest</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="rating-desc">Top Rated</option>
+                <option value="name-asc">Name A-Z</option>
+              </select>
+            </label>
+            <label class="collection-select-label" for="page-size-select">
+              <span id="label-page-size">Show</span>
+              <select id="page-size-select" class="collection-select" aria-label="Products per page">
+                <option value="12">12</option>
+                <option value="24">24</option>
+                <option value="48">48</option>
+              </select>
+            </label>
+          </div>
           <div class="filter-meta">
             <span id="filter-count" aria-live="polite" aria-atomic="true"
-              >8 products</span
+              >0 products</span
             >
             <button id="reset-filters-btn" aria-label="Reset all filters">
               Reset
@@ -779,6 +685,15 @@
         >
           No products found. Try a different search.
         </p>
+
+        <div class="collection-footer" id="collection-footer">
+          <p id="collection-page-info" class="collection-page-info" aria-live="polite"></p>
+          <nav
+            class="pagination"
+            id="collection-pagination"
+            aria-label="Product pagination"
+          ></nav>
+        </div>
       </section>
 
       <!-- ===================== REVIEWS ===================== -->
@@ -1632,7 +1547,7 @@
           trustQuality: 'Premium Quality',
           searchPlaceholder: 'Search products...',
           searchBtn: 'Search',
-          heroBadge: 'New Collection 2025',
+          heroBadge: 'New Collection 2026',
           heroTitle: 'Gear Up.<br><span class="hero-accent">Look Sharp.</span>',
           heroSub:
             'Premium sportswear delivered across Egypt. Style that moves with you.',
@@ -1739,7 +1654,7 @@
           footerLinksTitle: 'Quick Links',
           footerCareTitle: 'Customer Care',
           footerDeliverTitle: 'We Deliver To',
-          footerCopy: '© 2025 PHI. All rights reserved.',
+          footerCopy: '© 2026 PHI. All rights reserved.',
           footerTrust:
             '🔒 Secure Orders &nbsp;|&nbsp; 💵 Cash on Delivery &nbsp;|&nbsp; 🚀 Fast Shipping',
           footerCareTitle2: 'Customer Care',
@@ -1773,7 +1688,7 @@
           trustQuality: 'جودة بريميوم',
           searchPlaceholder: 'ابحث عن منتج...',
           searchBtn: 'بحث',
-          heroBadge: 'كولكشن 2025 الجديد',
+          heroBadge: 'كولكشن 2026 الجديد',
           heroTitle: 'استعد.<br><span class="hero-accent">ابدو شياك.</span>',
           heroSub: 'ملابس رياضية بريميوم بتتوصل لكل مصر. ستايل يتحرك معاك.',
           heroShopBtn: 'تسوق دلوقتي',

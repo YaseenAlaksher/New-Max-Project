@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>New Max — Admin Dashboard</title>
+<title>PHI - Admin Dashboard</title>
 <style>
 :root {
   --sidebar-w: 240px;
@@ -75,6 +75,12 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:
 .topbar{background:var(--card);border-bottom:1px solid var(--bord);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;gap:16px}
 .topbar h2{font-size:1.05rem;font-weight:700}
 .topbar-right{display:flex;align-items:center;gap:10px}
+#topbar-actions{display:flex;align-items:center;gap:10px}
+.api-health-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:0.76rem;font-weight:800;border:1px solid var(--bord);background:var(--bg);color:var(--muted);white-space:nowrap}
+.api-health-pill::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+.api-health-pill.ok{background:#ECFDF5;border-color:#BBF7D0;color:#15803D}
+.api-health-pill.warn{background:#FFFBEB;border-color:#FDE68A;color:#B45309}
+.api-health-pill.bad{background:#FEF2F2;border-color:#FECACA;color:#DC2626}
 .topbar-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;border:1.5px solid;font-family:inherit;transition:all .15s}
 .topbar-btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
 .topbar-btn-primary:hover{background:var(--bludk);border-color:var(--bludk)}
@@ -275,9 +281,9 @@ tr:hover td{background:#F8FAFC}
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">
-      <div class="login-logo-icon">NM</div>
+      <div class="login-logo-icon">PHI</div>
       <div>
-        <h2>New Max</h2>
+        <h2>PHI</h2>
         <p>Admin Dashboard</p>
       </div>
     </div>
@@ -291,7 +297,7 @@ tr:hover td{background:#F8FAFC}
     </div>
     <div class="login-field">
       <label>Password</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" />
+      <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password" />
     </div>
     <button class="btn-login" onclick="login()" id="login-btn">Sign In</button>
     <p style="margin-top:16px; font-size:0.75rem; color:var(--muted); text-align:center;">
@@ -309,10 +315,10 @@ tr:hover td{background:#F8FAFC}
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
-        <div class="icon">NM</div>
+        <div class="icon">PHI</div>
         <div>
-          <span>New Max Admin</span>
-          <small>Dashboard v2.0</small>
+          <span>PHI Admin</span>
+          <small>Dashboard v3.0</small>
         </div>
       </div>
 
@@ -353,7 +359,10 @@ tr:hover td{background:#F8FAFC}
     <main class="main">
       <header class="topbar">
         <h2 id="page-title">Dashboard</h2>
-        <div class="topbar-right" id="topbar-actions"></div>
+        <div class="topbar-right">
+          <span id="api-health" class="api-health-pill warn">Checking API</span>
+          <div id="topbar-actions"></div>
+        </div>
       </header>
 
       <div class="content">
@@ -428,6 +437,10 @@ tr:hover td{background:#F8FAFC}
                 <button class="filter-tab" onclick="filterOrders('delivered', this)">✅ Delivered</button>
                 <button class="filter-tab" onclick="filterOrders('cancelled', this)">❌ Cancelled</button>
               </div>
+              <div class="search-wrap" style="max-width:260px">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search orders..." id="order-search" oninput="debounce(loadOrders,350)()" />
+              </div>
             </div>
             <div class="card-body table-wrap">
               <table>
@@ -443,8 +456,8 @@ tr:hover td{background:#F8FAFC}
           <div class="card" style="max-width:480px">
             <div class="card-header"><h3>🔑 Change Password</h3></div>
             <div class="modal-body">
-              <div class="form-group"><label>Current Password</label><input type="password" id="cp-current" placeholder="••••••••" /></div>
-              <div class="form-group"><label>New Password</label><input type="password" id="cp-new" placeholder="min 6 characters" /></div>
+              <div class="form-group"><label>Current Password</label><input type="password" id="cp-current" placeholder="Current password" /></div>
+              <div class="form-group"><label>New Password</label><input type="password" id="cp-new" placeholder="min 8 characters" /></div>
               <div class="form-group"><label>Confirm New Password</label><input type="password" id="cp-confirm" placeholder="Repeat new password" /></div>
               <button class="topbar-btn topbar-btn-primary" onclick="changePassword()">Update Password</button>
             </div>
@@ -598,8 +611,21 @@ tr:hover td{background:#F8FAFC}
 // ══════════════════════════════════════════════════════
 //  CONFIGURATION
 // ══════════════════════════════════════════════════════
-const API = (localStorage.getItem('nm-api-url') || window.location.origin).replace(/\/$/, '');
-let TOKEN = localStorage.getItem('nm-admin-token');
+const STORAGE_KEYS = {
+  apiUrl: 'phi-api-url',
+  token: 'phi-admin-token',
+  user: 'phi-admin-user',
+};
+const LEGACY_KEYS = {
+  apiUrl: 'nm-api-url',
+  token: 'nm-admin-token',
+  user: 'nm-admin-user',
+};
+const API = (localStorage.getItem(STORAGE_KEYS.apiUrl) || localStorage.getItem(LEGACY_KEYS.apiUrl) || window.location.origin).replace(/\/$/, '');
+let TOKEN = localStorage.getItem(STORAGE_KEYS.token) || localStorage.getItem(LEGACY_KEYS.token);
+if (localStorage.getItem(LEGACY_KEYS.apiUrl) && !localStorage.getItem(STORAGE_KEYS.apiUrl)) localStorage.setItem(STORAGE_KEYS.apiUrl, localStorage.getItem(LEGACY_KEYS.apiUrl));
+if (localStorage.getItem(LEGACY_KEYS.token) && !localStorage.getItem(STORAGE_KEYS.token)) localStorage.setItem(STORAGE_KEYS.token, localStorage.getItem(LEGACY_KEYS.token));
+if (localStorage.getItem(LEGACY_KEYS.user) && !localStorage.getItem(STORAGE_KEYS.user)) localStorage.setItem(STORAGE_KEYS.user, localStorage.getItem(LEGACY_KEYS.user));
 let CURRENT_ORDER_FILTER = 'all';
 
 // ══════════════════════════════════════════════════════
@@ -620,6 +646,7 @@ document.addEventListener('DOMContentLoaded', function init() {
 
   // Update API URL display
   document.getElementById('api-url-display').textContent = API;
+  checkHealth();
 
   // Image preview on URL paste
   document.getElementById('mp-image').addEventListener('input', e => {
@@ -643,8 +670,8 @@ async function login() {
   try {
     const res = await req('/api/auth/login', 'POST', { username, password }, false);
     TOKEN = res.token;
-    localStorage.setItem('nm-admin-token', TOKEN);
-    localStorage.setItem('nm-admin-user', res.username || username);
+    localStorage.setItem(STORAGE_KEYS.token, TOKEN);
+    localStorage.setItem(STORAGE_KEYS.user, res.username || username);
     showApp();
   } catch(e) {
     errEl.textContent = e.message || 'Login failed';
@@ -657,7 +684,8 @@ async function login() {
 
 function logout() {
   TOKEN = null;
-  localStorage.removeItem('nm-admin-token');
+  localStorage.removeItem(STORAGE_KEYS.token);
+  localStorage.removeItem(LEGACY_KEYS.token);
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-pass').value = '';
@@ -676,7 +704,7 @@ var PAGE_ACTIONS = {
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  const username = localStorage.getItem('nm-admin-user') || 'Admin';
+  const username = localStorage.getItem(STORAGE_KEYS.user) || localStorage.getItem(LEGACY_KEYS.user) || 'Admin';
   document.getElementById('user-name').textContent = username;
   document.getElementById('user-avatar').textContent = username.charAt(0).toUpperCase();
   navigate('dashboard');
@@ -688,7 +716,7 @@ async function changePassword() {
   const cnf = document.getElementById('cp-confirm').value;
   if (!cur || !nw || !cnf) return toast('Please fill all fields', 'error');
   if (nw !== cnf) return toast('Passwords do not match', 'error');
-  if (nw.length < 6) return toast('Password must be at least 6 characters', 'error');
+  if (nw.length < 8) return toast('Password must be at least 8 characters', 'error');
   try {
     await req('/api/auth/change-password', 'POST', { currentPassword: cur, newPassword: nw });
     toast('Password changed successfully ✅', 'success');
@@ -772,7 +800,7 @@ async function loadProducts() {
       <tr>
         <td>
           <div class="prod-row">
-            <img src="${API + '/' + p.image.replace(/^\//,'')}" class="prod-thumb" onerror="this.style.background='var(--bg)';this.style.display='none'" />
+            <img src="${assetUrl(p.image)}" class="prod-thumb" onerror="this.style.background='var(--bg)';this.style.display='none'" />
             <div>
               <div class="prod-name">${p.name_en}</div>
               <div class="prod-name-ar">${p.name_ar || ''}</div>
@@ -835,7 +863,7 @@ async function openEditProduct(id) {
     document.getElementById('mp-is-new').checked = p.is_new;
 
     const prev = document.getElementById('mp-img-preview');
-    if (p.image) { prev.src = API + '/' + p.image.replace(/^\//,''); prev.style.display = 'block'; }
+    if (p.image) { prev.src = assetUrl(p.image); prev.style.display = 'block'; }
     else prev.style.display = 'none';
 
     // Sizes
@@ -946,7 +974,7 @@ async function uploadImage(input) {
     const data = await res.json();
     document.getElementById('mp-image').value = data.url;
     const prev = document.getElementById('mp-img-preview');
-    prev.src = API + data.url; prev.style.display = 'block';
+    prev.src = assetUrl(data.url); prev.style.display = 'block';
     toast('Image uploaded ✅', 'success');
   } catch(e) { toast('Image upload failed: ' + e.message, 'error'); }
 }
@@ -1037,7 +1065,11 @@ async function loadOrders() {
   const tbody = document.getElementById('orders-body');
   tbody.innerHTML = `<tr><td colspan="7" class="empty"><div>Loading...</div></td></tr>`;
   try {
-    const orders = await req('/api/orders' + (CURRENT_ORDER_FILTER !== 'all' ? '?status='+CURRENT_ORDER_FILTER : ''));
+    const orderSearch = document.getElementById('order-search')?.value.trim() || '';
+    const params = new URLSearchParams();
+    if (CURRENT_ORDER_FILTER !== 'all') params.set('status', CURRENT_ORDER_FILTER);
+    if (orderSearch) params.set('search', orderSearch);
+    const orders = await req('/api/orders' + (params.toString() ? '?' + params.toString() : ''));
     if (!orders.length) { tbody.innerHTML = emptyRow('No orders found', 7); return; }
     tbody.innerHTML = orders.map(o => `
       <tr>
@@ -1134,6 +1166,28 @@ async function deleteOrder(id) {
 // ══════════════════════════════════════════════════════
 //  UTILITIES
 // ══════════════════════════════════════════════════════
+function assetUrl(value) {
+  if (!value) return '';
+  if (/^(https?:|data:)/i.test(value)) return value;
+  return API + '/' + String(value).replace(/^\//, '');
+}
+
+async function checkHealth() {
+  const el = document.getElementById('api-health');
+  if (!el) return;
+  el.className = 'api-health-pill warn';
+  el.textContent = 'Checking API';
+  try {
+    const res = await fetch(API + '/api/health');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    el.className = 'api-health-pill ok';
+    el.textContent = 'API Online';
+  } catch (_) {
+    el.className = 'api-health-pill bad';
+    el.textContent = 'API Offline';
+  }
+}
+
 async function req(endpoint, method='GET', body=null, withAuth=true) {
   const headers = { 'Content-Type': 'application/json' };
   if (withAuth && TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
@@ -1150,7 +1204,9 @@ function toast(msg, type='info') {
   const c = document.getElementById('toast-container');
   const el = document.createElement('div');
   el.className = 'toast ' + (type || '');
-  el.innerHTML = `<span>${msg}</span>`;
+  const text = document.createElement('span');
+  text.textContent = msg;
+  el.appendChild(text);
   c.appendChild(el);
   setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(), 300); }, 3000);
 }
@@ -1172,8 +1228,13 @@ function debounce(fn, ms) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
-function copyApiUrl() {
-  navigator.clipboard.writeText(API).then(() => toast('API URL copied ✅', 'success'));
+async function copyApiUrl() {
+  try {
+    await navigator.clipboard.writeText(API);
+    toast('API URL copied', 'success');
+  } catch (_) {
+    toast(API, 'info');
+  }
 }
 </script>
 </body>

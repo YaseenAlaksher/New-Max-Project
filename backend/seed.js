@@ -1,5 +1,5 @@
 // ============================================================
-//  NEW MAX — Database Seed Script
+//  PHI — Database Seed Script
 //  Imports all existing products from products_data.js → SQLite
 //  Run ONCE after first install: node seed.js
 //  Safe to re-run (uses INSERT OR IGNORE)
