@@ -780,6 +780,460 @@ tr:hover td {
   }
 }
 
+
+
+/* PHI Admin Deep Visual Refresh */
+.analytics-grid,
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.analytics-card,
+.insight-card {
+  position: relative;
+  overflow: hidden;
+  border-color: #D6E4FF;
+}
+
+.analytics-card::before,
+.insight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, #2563EB, #0E9384, #7A5AF8);
+}
+
+.analytics-header {
+  align-items: flex-start;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.96));
+}
+
+.analytics-header p {
+  margin-top: 3px;
+  color: #667085;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+.chart-kpi {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  font-size: .78rem;
+  font-weight: 900;
+  white-space: nowrap;
+  border: 1px solid #BFDBFE;
+}
+
+.chart-shell {
+  min-height: 334px;
+  padding: 16px;
+  background:
+    linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+}
+
+.chart-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.chart-metric {
+  padding: 10px 12px;
+  border: 1px solid #E4E7EC;
+  border-radius: 8px;
+  background: rgba(255,255,255,.88);
+}
+
+.chart-metric span {
+  display: block;
+  color: #667085;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.chart-metric strong {
+  display: block;
+  margin-top: 4px;
+  color: #101828;
+  font-size: .98rem;
+  line-height: 1.15;
+}
+
+.chart-visual {
+  position: relative;
+  height: 230px;
+  border: 1px solid #E4E7EC;
+  border-radius: 8px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(37,99,235,.055), rgba(14,147,132,.035)),
+    repeating-linear-gradient(to bottom, transparent 0 45px, rgba(16,24,40,.055) 46px);
+}
+
+.chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.chart-axis-label {
+  fill: #667085;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.chart-value-label {
+  fill: #344054;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.chart-empty {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667085;
+  font-weight: 700;
+  background: linear-gradient(180deg, #FFFFFF, #F8FAFC);
+}
+
+.rank-list {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.rank-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #E4E7EC;
+  border-radius: 8px;
+  background: #FFFFFF;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.rank-card:hover {
+  transform: translateY(-1px);
+  border-color: #A4BCFD;
+  box-shadow: 0 12px 28px rgba(16,24,40,.08);
+}
+
+.rank-card.top {
+  background:
+    linear-gradient(135deg, rgba(239,246,255,.95), rgba(236,253,243,.82)),
+    #FFFFFF;
+  border-color: #BFDBFE;
+}
+
+.rank-index {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1D4ED8;
+  background: #EFF6FF;
+  font-weight: 900;
+}
+
+.rank-card.top .rank-index {
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #2563EB, #0E9384);
+}
+
+.rank-title {
+  color: #101828;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rank-meta {
+  margin-top: 2px;
+  color: #667085;
+  font-size: .75rem;
+  font-weight: 650;
+}
+
+.rank-meter {
+  height: 7px;
+  margin-top: 9px;
+  border-radius: 999px;
+  background: #EEF2F6;
+  overflow: hidden;
+}
+
+.rank-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563EB, #0E9384);
+}
+
+.rank-score {
+  min-width: 74px;
+  text-align: right;
+}
+
+.rank-score strong {
+  display: block;
+  color: #101828;
+  font-size: 1rem;
+}
+
+.rank-score span {
+  display: block;
+  color: #667085;
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.dashboard-table-card table tbody tr,
+.product-table-row,
+.order-table-row,
+.review-row {
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+
+.dashboard-table-card table tbody tr:hover,
+.product-table-row:hover,
+.order-table-row:hover,
+.review-row:hover {
+  transform: translateY(-1px);
+}
+
+.order-code,
+.product-code {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: #F2F4F7;
+  color: #344054;
+  font-size: .74rem;
+  font-weight: 800;
+}
+
+.customer-stack strong,
+.order-customer strong,
+.review-customer strong {
+  color: #101828;
+}
+
+.customer-stack span,
+.order-customer span,
+.review-customer span {
+  display: block;
+  margin-top: 2px;
+  color: #667085;
+  font-size: .74rem;
+}
+
+.money-cell {
+  color: #067647;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.product-table-row td,
+.order-table-row td,
+.review-row td {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.prod-row {
+  min-width: 260px;
+}
+
+.prod-thumb {
+  width: 52px;
+  height: 52px;
+  box-shadow: 0 8px 18px rgba(16,24,40,.08);
+}
+
+.prod-name {
+  color: #101828;
+  font-weight: 850;
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #1D4ED8;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  font-size: .76rem;
+  font-weight: 850;
+}
+
+.price-stack strong {
+  color: #067647;
+  font-size: .95rem;
+}
+
+.price-stack del {
+  color: #98A2B3;
+  font-size: .76rem;
+}
+
+.inventory-product-card {
+  border-color: #D6E4FF;
+}
+
+.inventory-product-card .card-header {
+  background:
+    linear-gradient(135deg, rgba(239,246,255,.96), rgba(236,253,243,.9));
+}
+
+.variant-grid {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+  background: #FCFCFD;
+}
+
+.variant-card {
+  position: relative;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.variant-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #12B76A;
+}
+
+.variant-card.low::before {
+  background: #F79009;
+}
+
+.variant-card.out::before {
+  background: #F04438;
+}
+
+.variant-header {
+  align-items: flex-start;
+}
+
+.variant-color {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(16,24,40,.04);
+}
+
+.variant-size {
+  color: #101828;
+  font-size: 1rem;
+}
+
+.variant-stock-input {
+  margin-top: 12px;
+}
+
+.variant-stock-input input {
+  width: 92px !important;
+  height: 40px;
+  font-size: 1rem;
+}
+
+.stock-warn {
+  margin-top: 10px;
+}
+
+.reviews-table .review-stars {
+  color: #F79009;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.review-comment {
+  max-width: 420px;
+  color: #344054;
+  line-height: 1.55;
+}
+
+.review-comment span {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E4E7EC;
+}
+
+.alert-list {
+  background: linear-gradient(180deg, #FFFFFF, #FCFCFD);
+}
+
+.alert-item {
+  margin: 10px 12px;
+  border: 1px solid #E4E7EC;
+  border-radius: 8px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04);
+}
+
+.alert-item:last-child {
+  border-bottom: 1px solid #E4E7EC;
+}
+
+.alert-name {
+  color: #101828;
+  font-weight: 850;
+}
+
+.recent-orders-body tr td:first-child {
+  width: 126px;
+}
+
+@media(max-width:1100px) {
+  .analytics-grid,
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width:720px) {
+  .chart-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .rank-card {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .rank-score {
+    grid-column: 2;
+    text-align: left;
+  }
+}
+/* End PHI Admin Deep Visual Refresh */
+
 </style>
 </head>
 <body>
@@ -802,11 +1256,11 @@ tr:hover td {
     <div class="login-error" id="login-error"></div>
     <div class="login-field">
       <label>Username</label>
-      <input type="text" id="login-user" placeholder="admin" autocomplete="username" />
+      <input type="text" id="login-user" name="username" placeholder="admin" autocomplete="username" />
     </div>
     <div class="login-field">
       <label>Password</label>
-      <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password" />
+      <input type="password" id="login-pass" name="password" placeholder="Password" autocomplete="current-password" />
     </div>
     <button class="btn-login" onclick="login()" id="login-btn">Sign In</button>
     <p style="margin-top:16px; font-size:0.75rem; color:var(--muted); text-align:center;">
@@ -893,27 +1347,45 @@ tr:hover td {
             <div class="stat-card"><div class="stat-icon grn">M</div><div><div class="stat-val" id="st-monthly-sales">-</div><div class="stat-lbl">Monthly Sales</div></div></div>
             <div class="stat-card"><div class="stat-icon grn">Y</div><div><div class="stat-val" id="st-yearly-sales">-</div><div class="stat-lbl">Yearly Sales</div></div></div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-            <div class="card"><div class="card-header"><h3>Revenue Chart</h3></div><div class="mini-chart" id="revenue-chart"></div></div>
-            <div class="card"><div class="card-header"><h3>Orders Chart</h3></div><div class="mini-chart" id="orders-chart"></div></div>
+          <div class="analytics-grid">
+            <div class="card analytics-card">
+              <div class="card-header analytics-header">
+                <div><h3>Revenue Chart</h3><p>Sales movement across the latest days</p></div>
+                <span class="chart-kpi" id="revenue-chart-total">EGP 0</span>
+              </div>
+              <div class="chart-shell" id="revenue-chart"></div>
+            </div>
+            <div class="card analytics-card">
+              <div class="card-header analytics-header">
+                <div><h3>Orders Chart</h3><p>Order volume and demand rhythm</p></div>
+                <span class="chart-kpi" id="orders-chart-total">0 orders</span>
+              </div>
+              <div class="chart-shell" id="orders-chart"></div>
+            </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-            <div class="card"><div class="card-header"><h3>Best Selling Products</h3></div><div class="list-compact" id="best-selling-list"></div></div>
-            <div class="card"><div class="card-header"><h3>Most Viewed Products</h3></div><div class="list-compact" id="most-viewed-list"></div></div>
+          <div class="insights-grid">
+            <div class="card insight-card">
+              <div class="card-header analytics-header"><div><h3>Best Selling Products</h3><p>Products generating the strongest demand</p></div></div>
+              <div class="rank-list" id="best-selling-list"></div>
+            </div>
+            <div class="card insight-card">
+              <div class="card-header analytics-header"><div><h3>Most Viewed Products</h3><p>Products receiving the most attention</p></div></div>
+              <div class="rank-list" id="most-viewed-list"></div>
+            </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
-            <div class="card">
-              <div class="card-header"><h3>📋 Recent Orders</h3></div>
+          <div style="display:grid;grid-template-columns:1fr 360px;gap:20px">
+            <div class="card dashboard-table-card">
+              <div class="card-header analytics-header"><div><h3>ðŸ“‹ Recent Orders</h3><p>Latest customer activity</p></div></div>
               <div class="card-body table-wrap">
                 <table>
                   <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
-                  <tbody id="recent-orders-body"><tr><td colspan="5" class="empty"><div>Loading...</div></td></tr></tbody>
+                  <tbody id="recent-orders-body" class="recent-orders-body"><tr><td colspan="5" class="empty"><div>Loading...</div></td></tr></tbody>
                 </table>
               </div>
             </div>
-            <div class="card">
-              <div class="card-header"><h3>🔴 Low Stock Alerts</h3></div>
-              <div class="alert-list" id="low-stock-list"><div class="empty"><div class="icon">⏳</div><p>Loading...</p></div></div>
+            <div class="card insight-card">
+              <div class="card-header analytics-header"><div><h3>ðŸ”´ Low Stock Alerts</h3><p>Variants that need attention</p></div></div>
+              <div class="alert-list" id="low-stock-list"><div class="empty"><div class="icon">â³</div><p>Loading...</p></div></div>
             </div>
           </div>
         </div>
@@ -928,7 +1400,7 @@ tr:hover td {
               </div>
             </div>
             <div class="card-body table-wrap">
-              <table>
+              <table class="products-table">
                 <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="products-body"><tr><td colspan="6" class="empty"><div>Loading...</div></td></tr></tbody>
               </table>
@@ -968,7 +1440,7 @@ tr:hover td {
               </div>
             </div>
             <div class="card-body table-wrap">
-              <table>
+              <table class="orders-table">
                 <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody id="orders-body"><tr><td colspan="7" class="empty"><div>Loading...</div></td></tr></tbody>
               </table>
@@ -1015,7 +1487,7 @@ tr:hover td {
           <div class="card">
             <div class="card-header"><h3>Customer Reviews</h3></div>
             <div class="card-body table-wrap">
-              <table>
+              <table class="reviews-table">
                 <thead><tr><th>Customer</th><th>Product</th><th>Rating</th><th>Comment</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody id="reviews-body"></tbody>
               </table>
@@ -1266,7 +1738,7 @@ document.addEventListener('DOMContentLoaded', function init() {
 
   // Enter key on login
   ['login-user','login-pass'].forEach(id => {
-    document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+    document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') login(e); });
   });
 
   // Update API URL display
@@ -1284,12 +1756,23 @@ document.addEventListener('DOMContentLoaded', function init() {
 // ══════════════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════════════
-async function login() {
-  const username = document.getElementById('login-user').value.trim();
-  const password = document.getElementById('login-pass').value;
+async function login(evt) {
+  if (evt && evt.preventDefault) evt.preventDefault();
+  const userEl = document.getElementById('login-user');
+  const passEl = document.getElementById('login-pass');
+  const username = (userEl?.value || '').trim();
+  const password = passEl?.value || '';
   const errEl = document.getElementById('login-error');
   const btn   = document.getElementById('login-btn');
   errEl.style.display = 'none';
+
+  if (!username || !password) {
+    errEl.textContent = 'Please enter username and password';
+    errEl.style.display = 'block';
+    (username ? passEl : userEl)?.focus();
+    return;
+  }
+
   btn.textContent = 'Signing in...';
   btn.disabled = true;
   try {
@@ -1384,10 +1867,10 @@ async function loadDashboard() {
     document.getElementById('st-weekly-sales').textContent = 'EGP ' + Number(s.weeklySales || 0).toLocaleString('en-EG', {maximumFractionDigits:0});
     document.getElementById('st-monthly-sales').textContent = 'EGP ' + Number(s.monthlySales || 0).toLocaleString('en-EG', {maximumFractionDigits:0});
     document.getElementById('st-yearly-sales').textContent = 'EGP ' + Number(s.yearlySales || 0).toLocaleString('en-EG', {maximumFractionDigits:0});
-    renderMiniChart('revenue-chart', s.revenueSeries || []);
-    renderMiniChart('orders-chart', s.ordersSeries || []);
-    renderCompactList('best-selling-list', s.bestSellingProducts || [], 'No sales yet', p => `<div class="list-compact-row"><span>${p.product_name || p.product_id}</span><strong>${p.units || 0} units</strong></div>`);
-    renderCompactList('most-viewed-list', s.mostViewedProducts || [], 'No product views yet', p => `<div class="list-compact-row"><span>${p.product_name || p.product_id}</span><strong>${p.views || 0} views</strong></div>`);
+    renderMiniChart('revenue-chart', s.revenueSeries || [], { type: 'money', totalLabel: 'Revenue' });
+    renderMiniChart('orders-chart', s.ordersSeries || [], { type: 'count', totalLabel: 'Orders' });
+    renderRankList('best-selling-list', s.bestSellingProducts || [], 'No sales yet', 'sales');
+    renderRankList('most-viewed-list', s.mostViewedProducts || [], 'No product views yet', 'views');
 
     // Pending badge
     if (s.pendingOrders > 0) {
@@ -1397,15 +1880,18 @@ async function loadDashboard() {
 
     // Recent orders table
     const tbody = document.getElementById('recent-orders-body');
-    if (!s.recentOrders?.length) { tbody.innerHTML = emptyRow('No orders yet', 5); return; }
-    tbody.innerHTML = s.recentOrders.map(o => `
-      <tr>
-        <td><code style="font-size:0.78rem">${o.id}</code></td>
-        <td><strong>${o.customer_name || '—'}</strong><br/><span style="font-size:0.75rem;color:var(--muted)">${o.customer_phone || ''}</span></td>
-        <td>EGP ${o.total}</td>
-        <td><span class="badge badge-${o.status}">${o.status}</span></td>
-        <td style="color:var(--muted);font-size:0.8rem">${fmtDate(o.created_at)}</td>
-      </tr>`).join('');
+    if (!s.recentOrders?.length) {
+      tbody.innerHTML = emptyRow('No orders yet', 5);
+    } else {
+      tbody.innerHTML = s.recentOrders.map(o => `
+        <tr class="order-table-row">
+          <td><code class="order-code">${o.id}</code></td>
+          <td><div class="customer-stack"><strong>${o.customer_name || 'â€”'}</strong><span>${o.customer_phone || ''}</span></div></td>
+          <td><span class="money-cell">EGP ${Number(o.total || 0).toLocaleString('en-EG')}</span></td>
+          <td><span class="badge badge-${o.status}">${o.status}</span></td>
+          <td style="color:var(--muted);font-size:0.8rem">${fmtDate(o.created_at)}</td>
+        </tr>`).join('');
+    }
 
     // Low stock alerts
     const alertList = document.getElementById('low-stock-list');
@@ -1425,16 +1911,127 @@ async function loadDashboard() {
 // ══════════════════════════════════════════════════════
 //  PRODUCTS
 // ══════════════════════════════════════════════════════
-function renderMiniChart(id, series) {
+function escapeAdminText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+}
+
+function formatChartValue(value, type) {
+  const num = Number(value || 0);
+  if (type === 'money') return 'EGP ' + num.toLocaleString('en-EG', { maximumFractionDigits: 0 });
+  return num.toLocaleString('en-EG');
+}
+
+function renderMiniChart(id, series, options = {}) {
   const el = document.getElementById(id);
   if (!el) return;
-  const data = Array.isArray(series) ? series : [];
-  const max = Math.max(1, ...data.map(row => Number(row.value || 0)));
-  el.innerHTML = data.length ? data.map(row => {
-    const h = Math.max(4, Math.round((Number(row.value || 0) / max) * 180));
-    const label = String(row.label || '').slice(5);
-    return `<div class="chart-bar" style="height:${h}px" title="${label}: ${row.value}"><span>${label}</span></div>`;
-  }).join('') : '<div class="empty"><p>No chart data yet</p></div>';
+  const type = options.type || (id.includes('revenue') ? 'money' : 'count');
+  const data = (Array.isArray(series) ? series : []).map(row => ({
+    label: String(row.label || ''),
+    value: Number(row.value || 0),
+  }));
+
+  const totalEl = document.getElementById(id + '-total');
+  const total = data.reduce((sum, row) => sum + row.value, 0);
+  if (totalEl) totalEl.textContent = type === 'money' ? formatChartValue(total, type) : formatChartValue(total, type) + ' orders';
+
+  if (!data.length) {
+    el.innerHTML = '<div class="chart-empty">No chart data yet</div>';
+    return;
+  }
+
+  const width = 680;
+  const height = 242;
+  const pad = { top: 24, right: 26, bottom: 34, left: 46 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  const max = Math.max(1, ...data.map(row => row.value));
+  const min = Math.min(0, ...data.map(row => row.value));
+  const range = Math.max(1, max - min);
+  const baseline = height - pad.bottom;
+  const points = data.map((row, index) => {
+    const x = pad.left + (data.length === 1 ? plotW / 2 : (index / (data.length - 1)) * plotW);
+    const y = pad.top + ((max - row.value) / range) * plotH;
+    return { ...row, x, y };
+  });
+  const pointString = points.map(p => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
+  const areaString = [pad.left + ',' + baseline, pointString, (width - pad.right) + ',' + baseline].join(' ');
+  const barW = Math.max(8, Math.min(24, plotW / Math.max(1, data.length) * .34));
+  const bars = points.map((p, index) => {
+    const h = Math.max(4, baseline - p.y);
+    const opacity = .20 + ((index + 1) / points.length) * .20;
+    return `<rect x="${(p.x - barW / 2).toFixed(1)}" y="${(baseline - h).toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="#2563EB" opacity="${opacity.toFixed(2)}"></rect>`;
+  }).join('');
+  const circles = points.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.2" fill="#fff" stroke="#2563EB" stroke-width="3"><title>${escapeAdminText(p.label)}: ${escapeAdminText(formatChartValue(p.value, type))}</title></circle>`).join('');
+  const labelEvery = Math.max(1, Math.ceil(data.length / 7));
+  const labels = points.map((p, index) => {
+    if (index % labelEvery !== 0 && index !== points.length - 1) return '';
+    const label = escapeAdminText((p.label || '').replace(/^\d{4}-/, ''));
+    return `<text x="${p.x.toFixed(1)}" y="${height - 11}" text-anchor="middle" class="chart-axis-label">${label}</text>`;
+  }).join('');
+  const peak = points.reduce((best, row) => row.value > best.value ? row : best, points[0]);
+  const avg = total / data.length;
+  const last = points[points.length - 1];
+
+  el.innerHTML = `
+    <div class="chart-summary">
+      <div class="chart-metric"><span>Total</span><strong>${formatChartValue(total, type)}</strong></div>
+      <div class="chart-metric"><span>Average</span><strong>${formatChartValue(avg, type)}</strong></div>
+      <div class="chart-metric"><span>Peak</span><strong>${formatChartValue(peak.value, type)}</strong></div>
+    </div>
+    <div class="chart-visual">
+      <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${escapeAdminText(options.totalLabel || 'Chart')}">
+        <defs>
+          <linearGradient id="${id}-area" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#2563EB" stop-opacity=".28"></stop>
+            <stop offset="100%" stop-color="#0E9384" stop-opacity=".02"></stop>
+          </linearGradient>
+          <linearGradient id="${id}-line" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#2563EB"></stop>
+            <stop offset="100%" stop-color="#0E9384"></stop>
+          </linearGradient>
+        </defs>
+        <line x1="${pad.left}" x2="${width - pad.right}" y1="${baseline}" y2="${baseline}" stroke="#D0D5DD" stroke-width="1"></line>
+        ${bars}
+        <polygon points="${areaString}" fill="url(#${id}-area)"></polygon>
+        <polyline points="${pointString}" fill="none" stroke="url(#${id}-line)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        ${circles}
+        <text x="${peak.x.toFixed(1)}" y="${Math.max(14, peak.y - 10).toFixed(1)}" text-anchor="middle" class="chart-value-label">${escapeAdminText(formatChartValue(peak.value, type))}</text>
+        ${labels}
+      </svg>
+    </div>
+  `;
+}
+
+function renderRankList(id, rows, empty, mode) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const list = Array.isArray(rows) ? rows.slice(0, 6) : [];
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><p>${empty}</p></div>`;
+    return;
+  }
+
+  const valueFor = row => mode === 'views' ? Number(row.views || 0) : Number(row.units || row.quantity || 0);
+  const max = Math.max(1, ...list.map(valueFor));
+  el.innerHTML = list.map((p, index) => {
+    const value = valueFor(p);
+    const percent = Math.max(6, Math.round((value / max) * 100));
+    const title = escapeAdminText(p.product_name || p.name_en || p.product_id || 'Product');
+    const meta = mode === 'views'
+      ? `${value.toLocaleString('en-EG')} product views`
+      : `${value.toLocaleString('en-EG')} units sold`;
+    const scoreLabel = mode === 'views' ? 'views' : 'units';
+    return `
+      <div class="rank-card ${index === 0 ? 'top' : ''}">
+        <div class="rank-index">#${index + 1}</div>
+        <div class="rank-main">
+          <div class="rank-title">${title}</div>
+          <div class="rank-meta">${meta}</div>
+          <div class="rank-meter"><span style="width:${percent}%"></span></div>
+        </div>
+        <div class="rank-score"><strong>${value.toLocaleString('en-EG')}</strong><span>${scoreLabel}</span></div>
+      </div>`;
+  }).join('');
 }
 
 function renderCompactList(id, rows, empty, formatter) {
@@ -1451,7 +2048,7 @@ async function loadProducts() {
     const products = await req('/api/products' + (search ? '?search=' + encodeURIComponent(search) : ''));
     if (!products.length) { tbody.innerHTML = emptyRow('No products found', 6); return; }
     tbody.innerHTML = products.map(p => `
-      <tr>
+      <tr class="product-table-row">
         <td>
           <div class="prod-row">
             <img src="${assetUrl(p.image)}" class="prod-thumb" onerror="this.style.background='var(--bg)';this.style.display='none'" />
@@ -1461,8 +2058,8 @@ async function loadProducts() {
             </div>
           </div>
         </td>
-        <td><span style="font-size:0.78rem;background:var(--bg);padding:3px 9px;border-radius:6px;font-weight:600">${p.category}</span></td>
-        <td><strong>EGP ${p.price}</strong>${p.original_price ? `<br/><del style="color:var(--muted);font-size:0.78rem">EGP ${p.original_price}</del>` : ''}</td>
+        <td><span class="category-pill">${p.category}</span></td>
+        <td><div class="price-stack"><strong>EGP ${p.price}</strong>${p.original_price ? `<br/><del>EGP ${p.original_price}</del>` : ''}</div></td>
         <td>
           <span class="badge ${p.totalStock===0?'badge-out':p.totalStock<=10?'badge-low':'badge-ok'}">
             ${p.totalStock===0?'Out of stock':p.totalStock+' units'}
@@ -1665,8 +2262,8 @@ async function loadVariants() {
     });
 
     container.innerHTML = Object.entries(byProduct).map(([pid, p]) => `
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-header"><h3>📦 ${p.name}</h3><span style="font-size:0.78rem;color:var(--muted)">${p.variants.length} variants</span></div>
+      <div class="card inventory-product-card" style="margin-bottom:16px">
+        <div class="card-header"><h3>ðŸ“¦ ${p.name}</h3><span class="chart-kpi">${p.variants.length} variants</span></div>
         <div class="variant-grid">
           ${p.variants.map(v => {
             const cls = v.stock === 0 ? 'out' : v.stock <= 5 ? 'low' : 'ok';
@@ -1726,15 +2323,13 @@ async function loadOrders() {
     const orders = await req('/api/orders' + (params.toString() ? '?' + params.toString() : ''));
     if (!orders.length) { tbody.innerHTML = emptyRow('No orders found', 7); return; }
     tbody.innerHTML = orders.map(o => `
-      <tr>
-        <td><code style="font-size:0.75rem">${o.id}</code></td>
+      <tr class="order-table-row">
+        <td><code class="order-code">${o.id}</code></td>
         <td>
-          <strong>${o.customer_name || '—'}</strong><br/>
-          <span style="font-size:0.75rem;color:var(--muted)">${o.customer_phone || ''}</span><br/>
-          <span style="font-size:0.75rem;color:var(--muted)">${o.customer_gov || ''}</span>
+          <div class="order-customer"><strong>${o.customer_name || 'â€”'}</strong><span>${o.customer_phone || ''}</span><span>${o.customer_gov || ''}</span></div>
         </td>
-        <td style="font-size:0.8rem">${(o.items||[]).length} item(s)</td>
-        <td><strong>EGP ${o.total}</strong></td>
+        <td style="font-size:0.8rem;font-weight:800">${(o.items||[]).length} item(s)</td>
+        <td><span class="money-cell">EGP ${Number(o.total || 0).toLocaleString('en-EG')}</span></td>
         <td>
           <select class="status-select" onchange="updateOrderStatus('${o.id}', this.value)">
             ${['pending','processing','shipped','delivered','cancelled'].map(s =>
@@ -2022,11 +2617,11 @@ async function loadReviews() {
     const rows = await req('/api/reviews');
     if (!rows.length) { tbody.innerHTML = emptyRow('No reviews yet', 7); return; }
     tbody.innerHTML = rows.map(r => `
-      <tr>
-        <td><strong>${r.customer_name}</strong><br><span class="muted">${r.city || ''}</span></td>
-        <td><code>${r.product_id || '-'}</code></td>
-        <td>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</td>
-        <td style="max-width:360px">${r.comment}</td>
+      <tr class="review-row">
+        <td><div class="review-customer"><strong>${r.customer_name}</strong><span>${r.city || ''}</span></div></td>
+        <td><code class="product-code">${r.product_id || '-'}</code></td>
+        <td><span class="review-stars">${'&#9733;'.repeat(r.rating)}${'&#9734;'.repeat(5 - r.rating)}</span></td>
+        <td class="review-comment"><span>${r.comment}</span></td>
         <td><span class="badge ${r.approved ? 'badge-ok' : 'badge-pending'}">${r.approved ? 'Approved' : 'Pending'}</span></td>
         <td class="muted">${fmtDate(r.created_at)}</td>
         <td><div class="actions">
