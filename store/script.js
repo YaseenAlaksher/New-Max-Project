@@ -24,6 +24,136 @@ const CONFIG = {
 // injected after this script runs, so the listener is always attached
 // before they start loading. (The 'error' event doesn't bubble, hence
 // the capture-phase listener on document.)
+
+function apiAssetUrl(value) {
+  if (!value) return '';
+  if (/^(https?:|data:)/i.test(value)) return value;
+  if (value.startsWith('/uploads/') && CONFIG.API_URL) return CONFIG.API_URL + value;
+  return value;
+}
+
+function setMeta(name, content, attr = 'name') {
+  if (!content) return;
+  let el = document.querySelector('meta[' + attr + '="' + name + '"]');
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, name);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
+async function fetchPublicSettings() {
+  if (!CONFIG.API_URL) return;
+  try {
+    const res = await fetch(CONFIG.API_URL + '/api/public/settings');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    publicSettings = await res.json();
+    applyPublicSettings(publicSettings);
+  } catch (e) {
+    console.warn('[PHI] Public settings unavailable:', e.message);
+  }
+}
+
+function applyPublicSettings(settings) {
+  if (!settings) return;
+  if (settings.storeName) CONFIG.STORE_NAME = settings.storeName;
+  if (settings.whatsappNumber) CONFIG.WA_PRIMARY = String(settings.whatsappNumber).replace(/\D/g, '');
+  if (settings.primaryColor) document.documentElement.style.setProperty('--blue', settings.primaryColor);
+  if (settings.secondaryColor) document.documentElement.style.setProperty('--red', settings.secondaryColor);
+  if (settings.metaTitle) document.title = settings.metaTitle;
+  setMeta('description', settings.metaDescription);
+  setMeta('keywords', settings.metaKeywords);
+  setMeta('og:title', settings.metaTitle, 'property');
+  setMeta('og:description', settings.metaDescription, 'property');
+  setMeta('og:image', apiAssetUrl(settings.ogImage), 'property');
+  setMeta('twitter:title', settings.metaTitle);
+  setMeta('twitter:description', settings.metaDescription);
+  setMeta('twitter:image', apiAssetUrl(settings.ogImage));
+
+  const fav = document.querySelector('link[rel="icon"]');
+  if (fav && settings.favicon) fav.href = apiAssetUrl(settings.favicon);
+  const apple = document.querySelector('link[rel="apple-touch-icon"]');
+  if (apple && settings.favicon) apple.href = apiAssetUrl(settings.favicon);
+
+  document.querySelectorAll('.logo img, .footer-logo img').forEach(img => {
+    if (settings.logo) img.src = apiAssetUrl(settings.logo);
+    if (settings.storeName) img.alt = settings.storeName + ' Logo';
+  });
+
+  const heroImg = document.querySelector('.hero-img-wrap img');
+  if (heroImg && settings.heroBannerImage) heroImg.src = apiAssetUrl(settings.heroBannerImage);
+  const footerCopy = document.querySelector('.footer-bottom p:first-child');
+  if (footerCopy && settings.footerText) footerCopy.textContent = settings.footerText;
+  const footerPhone = document.querySelector('.footer-col:nth-of-type(2) p:first-of-type');
+  if (footerPhone && settings.phoneNumbers) footerPhone.textContent = 'Phone: ' + settings.phoneNumbers;
+
+  document.querySelectorAll('.contact-btn-wa').forEach(a => { a.href = 'https://wa.me/' + CONFIG.WA_PRIMARY; });
+  document.querySelectorAll('.contact-btn-call').forEach(a => { a.href = 'tel:+' + CONFIG.WA_PRIMARY; });
+  document.querySelectorAll('.contact-card-primary .contact-num').forEach(el => { el.textContent = settings.whatsappNumber || CONFIG.WA_PRIMARY; });
+  document.querySelectorAll('.contact-card .contact-num').forEach((el, i) => { if (i === 1 && settings.phoneNumbers) el.textContent = settings.phoneNumbers; });
+
+  const map = document.getElementById('dynamic-contact-map');
+  if (map && settings.googleMapsLink) { map.href = settings.googleMapsLink; map.hidden = false; }
+
+  const socialWrap = document.querySelector('.footer-social');
+  if (socialWrap) {
+    const socialLinks = [['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['snapchat', 'Snapchat'], ['xTwitter', 'X']];
+    const links = socialLinks
+      .filter(pair => settings[pair[0]])
+      .map(pair => '<a href="' + settings[pair[0]] + '" aria-label="' + CONFIG.STORE_NAME + ' on ' + pair[1] + '" class="social-link" target="_blank" rel="noopener noreferrer">' + pair[1] + '</a>');
+    links.push('<a href="https://wa.me/' + CONFIG.WA_PRIMARY + '" aria-label="' + CONFIG.STORE_NAME + ' on WhatsApp" class="social-link" target="_blank" rel="noopener noreferrer">WhatsApp</a>');
+    socialWrap.innerHTML = links.join('');
+  }
+}
+
+async function fetchPublicBanners() {
+  if (!CONFIG.API_URL) return;
+  try {
+    const res = await fetch(CONFIG.API_URL + '/api/public/banners');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const banners = await res.json();
+    renderManagedBanners(Array.isArray(banners) ? banners : []);
+  } catch (e) {
+    console.warn('[PHI] Public banners unavailable:', e.message);
+  }
+}
+
+function renderManagedBanners(banners) {
+  const wrap = document.getElementById('managed-banners');
+  if (!wrap) return;
+  if (!banners.length) { wrap.hidden = true; return; }
+  wrap.hidden = false;
+  wrap.innerHTML = banners.map(b => {
+    let html = '<article class="managed-banner">';
+    html += '<img src="' + apiAssetUrl(b.image) + '" alt="' + escapeHtml(b.title || CONFIG.STORE_NAME) + '" loading="lazy" />';
+    html += '<div class="managed-banner-copy">';
+    if (b.title) html += '<h2>' + escapeHtml(b.title) + '</h2>';
+    if (b.subtitle) html += '<p>' + escapeHtml(b.subtitle) + '</p>';
+    if (b.cta_text && b.cta_link) html += '<a class="btn-primary" href="' + escapeHtml(b.cta_link) + '">' + escapeHtml(b.cta_text) + '</a>';
+    html += '</div></article>';
+    return html;
+  }).join('');
+}
+
+async function fetchApprovedReviews() {
+  if (!CONFIG.API_URL) return;
+  try {
+    const res = await fetch(CONFIG.API_URL + '/api/public/reviews?limit=12');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    publicReviews = await res.json();
+    if (publicReviews.length) renderTestimonials(getLang());
+  } catch (e) {
+    console.warn('[PHI] Public reviews unavailable:', e.message);
+  }
+}
+
+function trackProductView(productId) {
+  if (!CONFIG.API_URL || !productId) return;
+  fetch(CONFIG.API_URL + '/api/public/product-views/' + encodeURIComponent(productId), { method: 'POST' })
+    .catch(() => undefined);
+}
+
 const IMG_FALLBACK_SVG = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">' +
   '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
@@ -55,6 +185,9 @@ document.addEventListener('error', (e) => {
 // backend isn't deployed yet, or the fetch fails for any reason
 // (offline, CORS, slow network, etc).
 let liveInventory = null;
+
+let publicSettings = null;
+let publicReviews = [];
 
 function inventoryKey(productId, size, color) {
   return `${productId}|${size}|${color}`;
@@ -835,7 +968,9 @@ function renderAllProducts(lang) {
 function renderTestimonials(lang) {
   const track = document.getElementById('testimonial-track');
   if (!track || typeof TESTIMONIALS === 'undefined') return;
-  track.innerHTML = TESTIMONIALS.map(t => `
+  const dynamicReviews = publicReviews.map(r => ({ name: r.customer_name, stars: r.rating, verified: true, city: { en: r.city || 'PHI Customer', ar: r.city || 'PHI Customer' }, text: { en: r.comment, ar: r.comment } }));
+  const testimonialSource = dynamicReviews.length ? dynamicReviews : TESTIMONIALS;
+  track.innerHTML = testimonialSource.map(t => `
     <div class="testimonial-card">
       <div class="testimonial-stars" aria-label="Rating ${t.stars} out of 5">
         ${'★'.repeat(t.stars)}${'☆'.repeat(5 - t.stars)}
@@ -1985,7 +2120,7 @@ function submitReview() {
   if (product) msg += `📦 ${product}\n`;
   msg += `⭐ ${starsStr} (${selectedStars}/5)\n\n"${text}"\n━━━━━━━━━━━━━━━━━━━━━`;
 
-  saveOrderToBackend({ type: 'review', name, city, product, stars: selectedStars, text, date: new Date().toISOString() });
+  saveReviewToBackend({ name, city, productId: product, rating: selectedStars, comment: text, date: new Date().toISOString() });
   closeReviewModal();
   setTimeout(() => {
     window.open(`https://wa.me/${CONFIG.WA_PRIMARY}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -1994,6 +2129,19 @@ function submitReview() {
 }
 
 // ─── BACKEND INTEGRATION STUB ────────────────────────────────
+async function saveReviewToBackend(data) {
+  if (!CONFIG.API_URL) return;
+  try {
+    await fetch(CONFIG.API_URL + '/api/public/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (e) {
+    console.warn('[PHI] Backend review save failed:', e.message);
+  }
+}
+
 async function saveOrderToBackend(data) {
   const tasks = [];
 
@@ -2777,6 +2925,7 @@ function removeCartItemWithAnimation(li, callback) {
 // ─── ENHANCED OPEN PRODUCT MODAL ─────────────────────────────
 const _origOpenProductModal = openProductModal;
 openProductModal = function(productId) {
+  trackProductView(productId);
   _origOpenProductModal(productId);
   const lang = getLang();
   const product = PRODUCTS.find(p => p.id === productId);
@@ -2896,6 +3045,9 @@ function initAll(lang) {
   initScrollReveal();
   applyFilters();
   hideSkeletons();
+  fetchPublicSettings();
+  fetchPublicBanners();
+  fetchApprovedReviews();
   fetchLiveInventory();
   fetchProductsFromAPI();
 }

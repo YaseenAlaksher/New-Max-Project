@@ -13,6 +13,20 @@ const fs = require('fs');
 const crypto = require('crypto');
 const Database = require('better-sqlite3');
 
+let nodemailer = null;
+try {
+  nodemailer = require('nodemailer');
+} catch (_) {
+  nodemailer = null;
+}
+
+let helmet = null;
+try {
+  helmet = require('helmet');
+} catch (_) {
+  helmet = null;
+}
+
 const app = express();
 
 // Configuration ------------------------------------------------
@@ -33,6 +47,15 @@ const CORS_ORIGINS = (process.env.CORS_ORIGINS || '')
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   console.warn('[PHI] WARNING: JWT_SECRET is not set. Add a strong secret in production environment variables.');
 }
+
+function warnMissingProductionEnv(keys) {
+  if (process.env.NODE_ENV !== 'production') return;
+  keys.filter(key => !process.env[key]).forEach(key => {
+    console.warn(`[PHI] Production env warning: ${key} is not set.`);
+  });
+}
+
+warnMissingProductionEnv(['CORS_ORIGINS', 'DEFAULT_ADMIN_PASSWORD']);
 
 // Database -----------------------------------------------------
 const db = new Database(DB_PATH);
@@ -104,11 +127,131 @@ db.exec(`
     created_at    TEXT DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS store_settings (
+    key        TEXT PRIMARY KEY,
+    value      TEXT DEFAULT '',
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS banners (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT DEFAULT '',
+    subtitle   TEXT DEFAULT '',
+    image      TEXT DEFAULT '',
+    cta_text   TEXT DEFAULT '',
+    cta_link   TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    active     INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS reviews (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id    TEXT DEFAULT '',
+    customer_name TEXT NOT NULL,
+    city          TEXT DEFAULT '',
+    rating        INTEGER NOT NULL,
+    comment       TEXT NOT NULL,
+    approved      INTEGER DEFAULT 0,
+    created_at    TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS product_views (
+    product_id TEXT PRIMARY KEY,
+    views      INTEGER DEFAULT 0,
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id);
   CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at);
   CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at);
   CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+  CREATE INDEX IF NOT EXISTS idx_banners_active_sort ON banners(active, sort_order);
+  CREATE INDEX IF NOT EXISTS idx_reviews_product_approved ON reviews(product_id, approved);
+  CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at);
+  CREATE INDEX IF NOT EXISTS idx_product_views_views ON product_views(views);
 `);
+
+const DEFAULT_SETTINGS = {
+  storeName: STORE_NAME,
+  logo: 'images/phi-logo.png',
+  favicon: 'images/favicon.png?v=3',
+  whatsappNumber: '201064941387',
+  storeEmail: 'orders@example.com',
+  contactEmail: 'orders@example.com',
+  address: 'Egypt',
+  phoneNumbers: '01064941387 - 01014224479',
+  googleMapsLink: '',
+  facebook: '',
+  instagram: '',
+  tiktok: '',
+  snapchat: '',
+  xTwitter: '',
+  heroBannerImage: 'images/WhatsApp Image 2026-04-19 at 4.39.17 PM.jpeg',
+  primaryColor: '#2563EB',
+  secondaryColor: '#DC2626',
+  footerText: '2026 PHI. All rights reserved.',
+  metaTitle: 'PHI | Premium Sportswear in Egypt',
+  metaDescription: 'Shop premium sportswear from PHI with cash on delivery and fast shipping across Egypt.',
+  metaKeywords: 'PHI, sportswear, Egypt, t-shirts, pants, hoodies',
+  ogImage: 'images/phi-og-image.png'
+};
+
+const SETTINGS_KEYS = Object.keys(DEFAULT_SETTINGS);
+
+function seedDefaultSettings() {
+  const exists = db.prepare('SELECT key FROM store_settings WHERE key = ?').get('storeName');
+  if (exists) return;
+  const insert = db.prepare('INSERT OR IGNORE INTO store_settings (key, value) VALUES (?, ?)');
+  Object.entries(DEFAULT_SETTINGS).forEach(([key, value]) => insert.run(key, String(value || '')));
+}
+
+function getSettingsMap() {
+  const settings = { ...DEFAULT_SETTINGS };
+  db.prepare('SELECT key, value FROM store_settings').all().forEach(row => {
+    if (SETTINGS_KEYS.includes(row.key)) settings[row.key] = row.value || '';
+  });
+  return settings;
+}
+
+function normalizeSettingValue(key, value) {
+  const max = ['metaDescription', 'footerText', 'address'].includes(key) ? 1000 : 500;
+  let text = safeText(value, max);
+  if (key.toLowerCase().includes('color')) {
+    text = /^#[0-9a-f]{6}$/i.test(text) ? text : DEFAULT_SETTINGS[key];
+  }
+  return text;
+}
+
+function saveSettingsPayload(payload) {
+  const update = db.prepare(
+    "INSERT INTO store_settings (key, value, updated_at) VALUES (?, ?, datetime('now')) " +
+    "ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+  );
+  const tx = db.transaction(() => {
+    SETTINGS_KEYS.forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(payload, key)) {
+        update.run(key, normalizeSettingValue(key, payload[key]));
+      }
+    });
+  });
+  tx();
+  return getSettingsMap();
+}
+
+seedDefaultSettings();
+
+function ensureColumn(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all().map(row => row.name);
+  if (!columns.includes(column)) {
+    db.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`).run();
+  }
+}
+
+ensureColumn('orders', 'customer_email', "TEXT DEFAULT ''");
+ensureColumn('orders', 'subtotal', 'REAL DEFAULT 0');
+ensureColumn('orders', 'shipping', 'REAL DEFAULT 0');
 
 const adminCount = db.prepare('SELECT COUNT(*) AS count FROM admins').get();
 if (adminCount.count === 0) {
@@ -125,6 +268,13 @@ if (adminCount.count === 0) {
 // Middleware ---------------------------------------------------
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
+
+if (helmet) {
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false,
+  }));
+}
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -259,6 +409,7 @@ function safeText(value, max = 500) {
   if (value === undefined || value === null) return '';
   return String(value)
     .replace(/\u0000/g, '')
+    .replace(/[<>]/g, '')
     .trim()
     .slice(0, max);
 }
@@ -366,6 +517,129 @@ function normalizeVariants(variants) {
 function csvCell(value) {
   const text = value === undefined || value === null ? '' : String(value);
   return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function bannerToJSON(row) {
+  return {
+    ...row,
+    active: Boolean(row.active),
+    image: row.image || '',
+  };
+}
+
+function reviewToJSON(row) {
+  return {
+    ...row,
+    approved: Boolean(row.approved),
+    rating: Number(row.rating || 0),
+  };
+}
+
+function recalcProductReviewStats(productId) {
+  if (!productId) return;
+  const product = db.prepare('SELECT id FROM products WHERE id = ?').get(productId);
+  if (!product) return;
+  const stats = db
+    .prepare('SELECT COUNT(*) AS count, AVG(rating) AS rating FROM reviews WHERE product_id = ? AND approved = 1')
+    .get(productId);
+  db.prepare('UPDATE products SET review_count = ?, rating = ? WHERE id = ?')
+    .run(Number(stats.count || 0), Number(stats.rating || 4.5), productId);
+}
+
+function emailEscape(value) {
+  return String(value === undefined || value === null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function buildOrderEmail(order, items) {
+  const rows = items.map(item => `
+    <tr>
+      <td>${emailEscape(item.product_name)}</td>
+      <td>${emailEscape(item.qty)}</td>
+      <td>${emailEscape(item.size)}</td>
+      <td>${emailEscape(item.color)}</td>
+      <td>${emailEscape(item.price)}</td>
+    </tr>`).join('');
+  const html = `
+    <h2>New order - PHI</h2>
+    <p><strong>Order:</strong> ${emailEscape(order.id)}</p>
+    <p><strong>Customer:</strong> ${emailEscape(order.customer_name)} - ${emailEscape(order.customer_phone)}</p>
+    <p><strong>Email:</strong> ${emailEscape(order.customer_email || '')}</p>
+    <p><strong>Address:</strong> ${emailEscape(order.customer_gov)} / ${emailEscape(order.customer_city)} / ${emailEscape(order.customer_address)}</p>
+    <p><strong>Payment:</strong> ${emailEscape(order.payment)}</p>
+    <p><strong>Total:</strong> EGP ${emailEscape(order.total)}</p>
+    <p><strong>Time:</strong> ${emailEscape(order.created_at || new Date().toISOString())}</p>
+    <table border="1" cellpadding="8" cellspacing="0">
+      <thead><tr><th>Product</th><th>Qty</th><th>Size</th><th>Color</th><th>Price</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  const text = [
+    'New order - PHI',
+    `Order: ${order.id}`,
+    `Customer: ${order.customer_name} - ${order.customer_phone}`,
+    `Address: ${order.customer_gov} / ${order.customer_city} / ${order.customer_address}`,
+    `Payment: ${order.payment}`,
+    `Total: EGP ${order.total}`,
+    `Time: ${order.created_at || new Date().toISOString()}`,
+    '',
+    ...items.map(item => `- ${item.product_name} x${item.qty} (${item.size}/${item.color}) - EGP ${item.price}`),
+  ].join('\n');
+  return { html, text };
+}
+
+let emailConfigWarned = false;
+async function sendOrderNotification(order, items) {
+  const settings = getSettingsMap();
+  const to = process.env.ADMIN_EMAIL || settings.storeEmail || settings.contactEmail;
+  const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || settings.storeEmail || 'orders@localhost';
+  if (!to) return;
+
+  const message = buildOrderEmail(order, items);
+  const subject = `New PHI order ${order.id}`;
+
+  try {
+    if (process.env.EMAIL_WEBHOOK_URL) {
+      await fetch(process.env.EMAIL_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, from, subject, ...message, order, items }),
+      });
+      return;
+    }
+
+    if (process.env.RESEND_API_KEY && process.env.EMAIL_FROM) {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ from, to: [to], subject, html: message.html, text: message.text }),
+      });
+      return;
+    }
+
+    if (nodemailer && process.env.SMTP_HOST) {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true',
+        auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS || '' } : undefined,
+      });
+      await transporter.sendMail({ from, to, subject, html: message.html, text: message.text });
+      return;
+    }
+
+    if (!emailConfigWarned) {
+      emailConfigWarned = true;
+      console.warn('[PHI] Order email notification skipped. Configure EMAIL_WEBHOOK_URL, RESEND_API_KEY, or SMTP_HOST.');
+    }
+  } catch (error) {
+    console.warn('[PHI] Order email notification failed:', error.message);
+  }
 }
 
 function ordersQuery({ status, search }) {
@@ -500,6 +774,138 @@ app.post('/api/auth/change-password', requireAuth, (req, res) => {
     req.admin.id,
   );
 
+  res.json({ ok: true });
+});
+
+// Store settings ------------------------------------------------
+app.get('/api/settings', requireAuth, (req, res) => {
+  res.json(getSettingsMap());
+});
+
+app.put('/api/settings', requireAuth, (req, res) => {
+  const settings = saveSettingsPayload(req.body || {});
+  res.json({ ok: true, settings });
+});
+
+app.get('/api/public/settings', (req, res) => {
+  res.json(getSettingsMap());
+});
+
+// Homepage banners --------------------------------------------
+app.get('/api/banners', requireAuth, (req, res) => {
+  const rows = db.prepare('SELECT * FROM banners ORDER BY sort_order ASC, id DESC').all();
+  res.json(rows.map(bannerToJSON));
+});
+
+app.post('/api/banners', requireAuth, (req, res) => {
+  const body = req.body || {};
+  const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), 0) AS max FROM banners').get().max || 0;
+  const result = db.prepare(
+    'INSERT INTO banners (title, subtitle, image, cta_text, cta_link, sort_order, active) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).run(
+    safeText(body.title, 180),
+    safeText(body.subtitle, 500),
+    safeText(body.image, 1000),
+    safeText(body.cta_text || body.ctaText, 80),
+    safeText(body.cta_link || body.ctaLink, 1000),
+    safeInt(body.sort_order, maxOrder + 1),
+    body.active === false ? 0 : 1,
+  );
+  res.status(201).json({ ok: true, id: result.lastInsertRowid });
+});
+
+app.put('/api/banners/:id', requireAuth, (req, res) => {
+  const body = req.body || {};
+  const result = db.prepare(
+    'UPDATE banners SET title = ?, subtitle = ?, image = ?, cta_text = ?, cta_link = ?, sort_order = ?, active = ?, updated_at = datetime(\'now\') WHERE id = ?'
+  ).run(
+    safeText(body.title, 180),
+    safeText(body.subtitle, 500),
+    safeText(body.image, 1000),
+    safeText(body.cta_text || body.ctaText, 80),
+    safeText(body.cta_link || body.ctaLink, 1000),
+    safeInt(body.sort_order, 0),
+    asBoolean(body.active) ? 1 : 0,
+    req.params.id,
+  );
+  if (!result.changes) return res.status(404).json({ error: 'Banner not found' });
+  res.json({ ok: true });
+});
+
+app.post('/api/banners/reorder', requireAuth, (req, res) => {
+  const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+  const update = db.prepare('UPDATE banners SET sort_order = ?, updated_at = datetime(\'now\') WHERE id = ?');
+  const tx = db.transaction(() => ids.forEach((id, index) => update.run(index + 1, id)));
+  tx();
+  res.json({ ok: true });
+});
+
+app.delete('/api/banners/:id', requireAuth, (req, res) => {
+  const result = db.prepare('DELETE FROM banners WHERE id = ?').run(req.params.id);
+  if (!result.changes) return res.status(404).json({ error: 'Banner not found' });
+  res.json({ ok: true });
+});
+
+app.get('/api/public/banners', (req, res) => {
+  const rows = db.prepare('SELECT * FROM banners WHERE active = 1 ORDER BY sort_order ASC, id DESC').all();
+  res.json(rows.map(bannerToJSON));
+});
+
+// Reviews ------------------------------------------------------
+app.get('/api/reviews', requireAuth, (req, res) => {
+  const rows = db.prepare('SELECT * FROM reviews ORDER BY created_at DESC').all();
+  res.json(rows.map(reviewToJSON));
+});
+
+app.put('/api/reviews/:id', requireAuth, (req, res) => {
+  const review = db.prepare('SELECT * FROM reviews WHERE id = ?').get(req.params.id);
+  if (!review) return res.status(404).json({ error: 'Review not found' });
+  const approved = Object.prototype.hasOwnProperty.call(req.body || {}, 'approved') ? asBoolean(req.body.approved) : true;
+  db.prepare('UPDATE reviews SET approved = ? WHERE id = ?').run(approved ? 1 : 0, req.params.id);
+  recalcProductReviewStats(review.product_id);
+  res.json({ ok: true });
+});
+
+app.delete('/api/reviews/:id', requireAuth, (req, res) => {
+  const review = db.prepare('SELECT * FROM reviews WHERE id = ?').get(req.params.id);
+  if (!review) return res.status(404).json({ error: 'Review not found' });
+  db.prepare('DELETE FROM reviews WHERE id = ?').run(req.params.id);
+  recalcProductReviewStats(review.product_id);
+  res.json({ ok: true });
+});
+
+app.post('/api/public/reviews', orderLimiter, (req, res) => {
+  const body = req.body || {};
+  const name = safeText(body.customerName || body.name, 120);
+  const city = safeText(body.city, 120);
+  const productId = safeText(body.productId || body.product_id || '', 80);
+  const rating = Math.max(1, Math.min(5, safeInt(body.rating || body.stars, 0)));
+  const comment = safeText(body.comment || body.text, 1200);
+  if (!name || !rating || comment.length < 10) {
+    return res.status(400).json({ error: 'Name, rating, and review comment are required' });
+  }
+  const result = db.prepare(
+    'INSERT INTO reviews (product_id, customer_name, city, rating, comment, approved) VALUES (?, ?, ?, ?, ?, 0)'
+  ).run(productId, name, city, rating, comment);
+  res.status(201).json({ ok: true, id: result.lastInsertRowid, pendingApproval: true });
+});
+
+app.get('/api/public/reviews', (req, res) => {
+  const productId = safeText(req.query.productId || '', 80);
+  const limit = Math.min(30, Math.max(1, safeInt(req.query.limit, 12)));
+  const rows = productId
+    ? db.prepare('SELECT * FROM reviews WHERE approved = 1 AND product_id = ? ORDER BY created_at DESC LIMIT ?').all(productId, limit)
+    : db.prepare('SELECT * FROM reviews WHERE approved = 1 ORDER BY created_at DESC LIMIT ?').all(limit);
+  res.json(rows.map(reviewToJSON));
+});
+
+app.post('/api/public/product-views/:id', (req, res) => {
+  const productId = safeText(req.params.id, 80);
+  if (!productId) return res.status(400).json({ error: 'Product id is required' });
+  db.prepare(
+    'INSERT INTO product_views (product_id, views, updated_at) VALUES (?, 1, datetime(\'now\')) ' +
+    'ON CONFLICT(product_id) DO UPDATE SET views = views + 1, updated_at = datetime(\'now\')'
+  ).run(productId);
   res.json({ ok: true });
 });
 
@@ -824,12 +1230,16 @@ app.post('/api/orders', orderLimiter, (req, res) => {
     return;
   }
 
+  const orderSubtotal = cleanItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const orderShipping = Math.max(0, safeNumber(body.shipping, 0));
+  const orderTotal = Math.max(0, orderSubtotal + orderShipping);
+
   const warnings = [];
   const affectedProducts = new Set();
   const insertOrder = db.prepare(`
     INSERT INTO orders
-      (id, customer_name, customer_phone, customer_gov, customer_city, customer_address, customer_notes, total, payment, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, customer_name, customer_phone, customer_email, customer_gov, customer_city, customer_address, customer_notes, subtotal, shipping, total, payment, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insertItem = db.prepare(`
     INSERT INTO order_items
@@ -851,11 +1261,14 @@ app.post('/api/orders', orderLimiter, (req, res) => {
       id,
       safeText(customer.name || body.name, 160),
       safeText(customer.phone || body.phone, 80),
+      safeText(customer.email || body.email, 160),
       safeText(customer.gov || body.gov, 120),
       safeText(customer.city || body.city, 120),
       safeText(customer.address || body.address, 500),
       safeText(customer.notes || body.notes, 1000),
-      Math.max(0, safeNumber(body.total, cleanItems.reduce((sum, item) => sum + item.price * item.qty, 0))),
+      orderSubtotal,
+      orderShipping,
+      orderTotal,
       safeText(body.payment || 'Cash on Delivery', 80),
       normalizeStatus(body.status),
     );
@@ -880,6 +1293,9 @@ app.post('/api/orders', orderLimiter, (req, res) => {
   });
 
   createOrder();
+  const savedOrder = db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
+  const savedItems = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(id);
+  sendOrderNotification(savedOrder, savedItems);
   res.status(201).json({ ok: true, id, warnings });
 });
 
@@ -914,7 +1330,11 @@ app.get('/api/stats', requireAuth, (req, res) => {
   const totalRevenue = db
     .prepare("SELECT SUM(total) AS total FROM orders WHERE status != 'cancelled'")
     .get().total || 0;
-  const recentOrders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT 6').all();
+  const todayOrders = db.prepare("SELECT COUNT(*) AS count FROM orders WHERE date(created_at) = date('now')").get().count;
+  const weeklySales = db.prepare("SELECT SUM(total) AS total FROM orders WHERE status != 'cancelled' AND date(created_at) >= date('now', '-6 days')").get().total || 0;
+  const monthlySales = db.prepare("SELECT SUM(total) AS total FROM orders WHERE status != 'cancelled' AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')").get().total || 0;
+  const yearlySales = db.prepare("SELECT SUM(total) AS total FROM orders WHERE status != 'cancelled' AND strftime('%Y', created_at) = strftime('%Y', 'now')").get().total || 0;
+  const recentOrders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT 8').all();
   const lowStockItems = db.prepare(`
     SELECT pv.*, p.name_en, p.name_ar, p.image
     FROM product_variants pv
@@ -924,6 +1344,36 @@ app.get('/api/stats', requireAuth, (req, res) => {
     LIMIT 10
   `).all(LOW_STOCK_THRESHOLD);
   const byStatus = db.prepare('SELECT status, COUNT(*) AS count FROM orders GROUP BY status').all();
+  const bestSellingProducts = db.prepare(`
+    SELECT oi.product_id, oi.product_name, SUM(oi.qty) AS units, SUM(oi.qty * oi.price) AS revenue
+    FROM order_items oi
+    JOIN orders o ON o.id = oi.order_id
+    WHERE o.status != 'cancelled'
+    GROUP BY oi.product_id, oi.product_name
+    ORDER BY units DESC
+    LIMIT 8
+  `).all();
+  const mostViewedProducts = db.prepare(`
+    SELECT pv.product_id, pv.views, p.name_en AS product_name, p.image
+    FROM product_views pv
+    LEFT JOIN products p ON p.id = pv.product_id
+    ORDER BY pv.views DESC
+    LIMIT 8
+  `).all();
+  const revenueSeries = db.prepare(`
+    SELECT date(created_at) AS label, SUM(total) AS value
+    FROM orders
+    WHERE status != 'cancelled' AND date(created_at) >= date('now', '-13 days')
+    GROUP BY date(created_at)
+    ORDER BY label ASC
+  `).all();
+  const ordersSeries = db.prepare(`
+    SELECT date(created_at) AS label, COUNT(*) AS value
+    FROM orders
+    WHERE date(created_at) >= date('now', '-13 days')
+    GROUP BY date(created_at)
+    ORDER BY label ASC
+  `).all();
 
   res.json({
     totalProducts,
@@ -932,9 +1382,17 @@ app.get('/api/stats', requireAuth, (req, res) => {
     lowStock,
     outOfStock,
     totalRevenue,
+    todayOrders,
+    weeklySales,
+    monthlySales,
+    yearlySales,
     recentOrders,
     lowStockItems,
     byStatus,
+    bestSellingProducts,
+    mostViewedProducts,
+    revenueSeries,
+    ordersSeries,
   });
 });
 

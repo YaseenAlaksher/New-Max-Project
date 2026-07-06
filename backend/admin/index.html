@@ -337,6 +337,8 @@ tr:hover td{background:#F8FAFC}
           <span class="icon">🛒</span> Orders
           <span class="nav-badge" id="pending-badge" style="display:none">0</span>
         </button>
+        <button class="nav-item" onclick="navigate('banners')"><span class="icon">BN</span> Banners</button>
+        <button class="nav-item" onclick="navigate('reviews')"><span class="icon">RV</span> Reviews</button>
         <div class="nav-section">Account</div>
         <button class="nav-item" onclick="navigate('settings')">
           <span class="icon">⚙️</span> Settings
@@ -376,6 +378,20 @@ tr:hover td{background:#F8FAFC}
             <div class="stat-card"><div class="stat-icon grn">💰</div><div><div class="stat-val" id="st-rev">—</div><div class="stat-lbl">Total Revenue (EGP)</div></div></div>
           </div>
 
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon blue">D</div><div><div class="stat-val" id="st-today-orders">-</div><div class="stat-lbl">Today's Orders</div></div></div>
+            <div class="stat-card"><div class="stat-icon grn">W</div><div><div class="stat-val" id="st-weekly-sales">-</div><div class="stat-lbl">Weekly Sales</div></div></div>
+            <div class="stat-card"><div class="stat-icon grn">M</div><div><div class="stat-val" id="st-monthly-sales">-</div><div class="stat-lbl">Monthly Sales</div></div></div>
+            <div class="stat-card"><div class="stat-icon grn">Y</div><div><div class="stat-val" id="st-yearly-sales">-</div><div class="stat-lbl">Yearly Sales</div></div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div class="card"><div class="card-header"><h3>Revenue Chart</h3></div><div class="mini-chart" id="revenue-chart"></div></div>
+            <div class="card"><div class="card-header"><h3>Orders Chart</h3></div><div class="mini-chart" id="orders-chart"></div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div class="card"><div class="card-header"><h3>Best Selling Products</h3></div><div class="list-compact" id="best-selling-list"></div></div>
+            <div class="card"><div class="card-header"><h3>Most Viewed Products</h3></div><div class="list-compact" id="most-viewed-list"></div></div>
+          </div>
           <div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
             <div class="card">
               <div class="card-header"><h3>📋 Recent Orders</h3></div>
@@ -452,7 +468,85 @@ tr:hover td{background:#F8FAFC}
         </div>
 
         <!-- ── SETTINGS ── -->
+
+
+        <!-- BANNERS -->
+        <div class="page" id="page-banners">
+          <div class="card">
+            <div class="card-header"><h3>Homepage Banner Management</h3></div>
+            <div class="settings-grid">
+              <input type="hidden" id="bn-id" />
+              <div class="form-group"><label>Title</label><input id="bn-title" placeholder="Banner title" /></div>
+              <div class="form-group"><label>CTA Text</label><input id="bn-cta-text" placeholder="Shop Now" /></div>
+              <div class="form-group wide"><label>Subtitle</label><textarea id="bn-subtitle" placeholder="Banner subtitle"></textarea></div>
+              <div class="form-group"><label>Image URL</label><input id="bn-image" placeholder="/uploads/banner.webp" /></div>
+              <div class="form-group"><label>CTA Link</label><input id="bn-cta-link" placeholder="#products-section" /></div>
+              <div class="form-group"><label>Sort Order</label><input id="bn-sort" type="number" value="1" /></div>
+              <div class="form-group"><label>Active</label><select id="bn-active"><option value="true">Enabled</option><option value="false">Disabled</option></select></div>
+              <div class="wide" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <label class="topbar-btn topbar-btn-secondary">Upload Image<input type="file" accept="image/*" style="display:none" onchange="uploadAdminImage(this,'bn-image')" /></label>
+                <button class="topbar-btn topbar-btn-primary" onclick="saveBanner()">Save Banner</button>
+                <button class="topbar-btn topbar-btn-secondary" onclick="resetBannerForm()">Clear</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Banners</h3></div>
+            <div class="card-body table-wrap">
+              <table>
+                <thead><tr><th>Image</th><th>Title</th><th>Status</th><th>Order</th><th>Actions</th></tr></thead>
+                <tbody id="banners-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- REVIEWS -->
+        <div class="page" id="page-reviews">
+          <div class="card">
+            <div class="card-header"><h3>Customer Reviews</h3></div>
+            <div class="card-body table-wrap">
+              <table>
+                <thead><tr><th>Customer</th><th>Product</th><th>Rating</th><th>Comment</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody id="reviews-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <div class="page" id="page-settings">
+          <div class="card">
+            <div class="card-header"><h3>Store Settings, Contact, and SEO</h3></div>
+            <div class="settings-grid" id="store-settings-form">
+              <div class="form-group"><label>Store Name</label><input id="set-storeName" /></div>
+              <div class="form-group"><label>WhatsApp Number</label><input id="set-whatsappNumber" /></div>
+              <div class="form-group"><label>Store Email</label><input id="set-storeEmail" /></div>
+              <div class="form-group"><label>Contact Email</label><input id="set-contactEmail" /></div>
+              <div class="form-group"><label>Phone Numbers</label><input id="set-phoneNumbers" /></div>
+              <div class="form-group"><label>Google Maps Link</label><input id="set-googleMapsLink" /></div>
+              <div class="form-group wide"><label>Address</label><textarea id="set-address"></textarea></div>
+              <div class="form-group"><label>Logo</label><input id="set-logo" /></div>
+              <div class="form-group"><label>Favicon</label><input id="set-favicon" /></div>
+              <div class="form-group wide"><label>Hero Banner Image</label><input id="set-heroBannerImage" /></div>
+              <div class="form-group"><label>Primary Color</label><input id="set-primaryColor" type="color" /></div>
+              <div class="form-group"><label>Secondary Color</label><input id="set-secondaryColor" type="color" /></div>
+              <div class="form-group"><label>Facebook</label><input id="set-facebook" /></div>
+              <div class="form-group"><label>Instagram</label><input id="set-instagram" /></div>
+              <div class="form-group"><label>TikTok</label><input id="set-tiktok" /></div>
+              <div class="form-group"><label>Snapchat</label><input id="set-snapchat" /></div>
+              <div class="form-group"><label>X / Twitter</label><input id="set-xTwitter" /></div>
+              <div class="form-group wide"><label>Footer Text</label><input id="set-footerText" /></div>
+              <div class="form-group"><label>Meta Title</label><input id="set-metaTitle" /></div>
+              <div class="form-group"><label>Keywords</label><input id="set-metaKeywords" /></div>
+              <div class="form-group wide"><label>Meta Description</label><textarea id="set-metaDescription"></textarea></div>
+              <div class="form-group wide"><label>Open Graph Image</label><input id="set-ogImage" /></div>
+              <div class="wide" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <label class="topbar-btn topbar-btn-secondary">Upload Logo<input type="file" accept="image/*" style="display:none" onchange="uploadAdminImage(this,'set-logo')" /></label>
+                <label class="topbar-btn topbar-btn-secondary">Upload Hero<input type="file" accept="image/*" style="display:none" onchange="uploadAdminImage(this,'set-heroBannerImage')" /></label>
+                <button class="topbar-btn topbar-btn-primary" onclick="saveSettings()">Save Settings</button>
+              </div>
+            </div>
+          </div>
           <div class="card" style="max-width:480px">
             <div class="card-header"><h3>🔑 Change Password</h3></div>
             <div class="modal-body">
@@ -694,7 +788,7 @@ function logout() {
 // ══════════════════════════════════════════════════════
 //  NAVIGATION CONSTANTS (must be before showApp/navigate)
 // ══════════════════════════════════════════════════════
-var PAGE_TITLES = { dashboard:'Dashboard', products:'Products', inventory:'Inventory', orders:'Orders', settings:'Settings' };
+var PAGE_TITLES = { dashboard:'Dashboard', products:'Products', inventory:'Inventory', orders:'Orders', banners:'Banners', reviews:'Reviews', settings:'Settings' };
 var PAGE_ACTIONS = {
   products: `<button class="topbar-btn topbar-btn-primary" onclick="openAddProduct()">+ Add Product</button>`,
   inventory: `<button class="topbar-btn topbar-btn-secondary" onclick="loadVariants()">🔄 Refresh</button>`,
@@ -740,6 +834,9 @@ function navigate(page) {
   else if (page === 'products') loadProducts();
   else if (page === 'inventory') loadInventoryProducts();
   else if (page === 'orders') loadOrders();
+  else if (page === 'banners') loadBanners();
+  else if (page === 'reviews') loadReviews();
+  else if (page === 'settings') loadSettings();
 }
 
 // ══════════════════════════════════════════════════════
@@ -752,6 +849,14 @@ async function loadDashboard() {
     document.getElementById('st-orders').textContent = s.totalOrders;
     document.getElementById('st-low').textContent = s.lowStock;
     document.getElementById('st-rev').textContent = 'EGP ' + Number(s.totalRevenue).toLocaleString('en-EG', {maximumFractionDigits:0});
+    document.getElementById('st-today-orders').textContent = s.todayOrders || 0;
+    document.getElementById('st-weekly-sales').textContent = 'EGP ' + Number(s.weeklySales || 0).toLocaleString('en-EG', {maximumFractionDigits:0});
+    document.getElementById('st-monthly-sales').textContent = 'EGP ' + Number(s.monthlySales || 0).toLocaleString('en-EG', {maximumFractionDigits:0});
+    document.getElementById('st-yearly-sales').textContent = 'EGP ' + Number(s.yearlySales || 0).toLocaleString('en-EG', {maximumFractionDigits:0});
+    renderMiniChart('revenue-chart', s.revenueSeries || []);
+    renderMiniChart('orders-chart', s.ordersSeries || []);
+    renderCompactList('best-selling-list', s.bestSellingProducts || [], 'No sales yet', p => `<div class="list-compact-row"><span>${p.product_name || p.product_id}</span><strong>${p.units || 0} units</strong></div>`);
+    renderCompactList('most-viewed-list', s.mostViewedProducts || [], 'No product views yet', p => `<div class="list-compact-row"><span>${p.product_name || p.product_id}</span><strong>${p.views || 0} views</strong></div>`);
 
     // Pending badge
     if (s.pendingOrders > 0) {
@@ -789,6 +894,24 @@ async function loadDashboard() {
 // ══════════════════════════════════════════════════════
 //  PRODUCTS
 // ══════════════════════════════════════════════════════
+function renderMiniChart(id, series) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const data = Array.isArray(series) ? series : [];
+  const max = Math.max(1, ...data.map(row => Number(row.value || 0)));
+  el.innerHTML = data.length ? data.map(row => {
+    const h = Math.max(4, Math.round((Number(row.value || 0) / max) * 180));
+    const label = String(row.label || '').slice(5);
+    return `<div class="chart-bar" style="height:${h}px" title="${label}: ${row.value}"><span>${label}</span></div>`;
+  }).join('') : '<div class="empty"><p>No chart data yet</p></div>';
+}
+
+function renderCompactList(id, rows, empty, formatter) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = rows && rows.length ? rows.map(formatter).join('') : `<div class="empty"><p>${empty}</p></div>`;
+}
+
 async function loadProducts() {
   const search = document.getElementById('prod-search')?.value || '';
   const tbody = document.getElementById('products-body');
@@ -1251,6 +1374,153 @@ function fmtDate(d) {
 function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+
+// STORE SETTINGS / BANNERS / REVIEWS
+const SETTINGS_FIELDS = ['storeName','logo','favicon','whatsappNumber','storeEmail','contactEmail','address','phoneNumbers','googleMapsLink','facebook','instagram','tiktok','snapchat','xTwitter','heroBannerImage','primaryColor','secondaryColor','footerText','metaTitle','metaDescription','metaKeywords','ogImage'];
+
+async function uploadAdminImage(input, targetId) {
+  if (!input.files || !input.files[0]) return;
+  const fd = new FormData();
+  fd.append('image', input.files[0]);
+  try {
+    const res = await fetch(API + '/api/upload', { method:'POST', headers:{ Authorization:'Bearer '+TOKEN }, body:fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    document.getElementById(targetId).value = data.url || '';
+    toast('Image uploaded', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+  input.value = '';
+}
+
+async function loadSettings() {
+  try {
+    const data = await req('/api/settings');
+    SETTINGS_FIELDS.forEach(key => {
+      const el = document.getElementById('set-' + key);
+      if (el) el.value = data[key] || '';
+    });
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function saveSettings() {
+  const payload = {};
+  SETTINGS_FIELDS.forEach(key => {
+    const el = document.getElementById('set-' + key);
+    if (el) payload[key] = el.value;
+  });
+  try {
+    await req('/api/settings', 'PUT', payload);
+    toast('Settings saved', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function resetBannerForm() {
+  ['bn-id','bn-title','bn-subtitle','bn-image','bn-cta-text','bn-cta-link'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('bn-sort').value = '1';
+  document.getElementById('bn-active').value = 'true';
+}
+
+async function loadBanners() {
+  const tbody = document.getElementById('banners-body');
+  if (!tbody) return;
+  tbody.innerHTML = emptyRow('Loading banners...', 5);
+  try {
+    const rows = await req('/api/banners');
+    if (!rows.length) { tbody.innerHTML = emptyRow('No banners yet', 5); return; }
+    tbody.innerHTML = rows.map(b => `
+      <tr>
+        <td><img class="thumb-sm" src="${assetUrl(b.image)}" onerror="this.style.display='none'" /></td>
+        <td><strong>${b.title || '-'}</strong><br><span class="muted">${b.subtitle || ''}</span></td>
+        <td><span class="badge ${b.active ? 'badge-ok' : 'badge-cancelled'}">${b.active ? 'Enabled' : 'Disabled'}</span></td>
+        <td>${b.sort_order || 0}</td>
+        <td><div class="actions">
+          <button class="btn-icon primary" onclick='editBanner(${JSON.stringify(b).replace(/'/g, '&#39;')})'>Edit</button>
+          <button class="btn-icon danger" onclick="deleteBanner(${b.id})">Delete</button>
+        </div></td>
+      </tr>`).join('');
+  } catch(e) { toast(e.message, 'error'); tbody.innerHTML = emptyRow('Error loading banners', 5); }
+}
+
+function editBanner(b) {
+  document.getElementById('bn-id').value = b.id || '';
+  document.getElementById('bn-title').value = b.title || '';
+  document.getElementById('bn-subtitle').value = b.subtitle || '';
+  document.getElementById('bn-image').value = b.image || '';
+  document.getElementById('bn-cta-text').value = b.cta_text || '';
+  document.getElementById('bn-cta-link').value = b.cta_link || '';
+  document.getElementById('bn-sort').value = b.sort_order || 1;
+  document.getElementById('bn-active').value = b.active ? 'true' : 'false';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function saveBanner() {
+  const id = document.getElementById('bn-id').value;
+  const payload = {
+    title: document.getElementById('bn-title').value,
+    subtitle: document.getElementById('bn-subtitle').value,
+    image: document.getElementById('bn-image').value,
+    cta_text: document.getElementById('bn-cta-text').value,
+    cta_link: document.getElementById('bn-cta-link').value,
+    sort_order: Number(document.getElementById('bn-sort').value || 1),
+    active: document.getElementById('bn-active').value === 'true',
+  };
+  try {
+    await req(id ? '/api/banners/' + id : '/api/banners', id ? 'PUT' : 'POST', payload);
+    toast('Banner saved', 'success');
+    resetBannerForm();
+    loadBanners();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteBanner(id) {
+  if (!confirm('Delete this banner?')) return;
+  try {
+    await req('/api/banners/' + id, 'DELETE');
+    toast('Banner deleted', 'success');
+    loadBanners();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function loadReviews() {
+  const tbody = document.getElementById('reviews-body');
+  if (!tbody) return;
+  tbody.innerHTML = emptyRow('Loading reviews...', 7);
+  try {
+    const rows = await req('/api/reviews');
+    if (!rows.length) { tbody.innerHTML = emptyRow('No reviews yet', 7); return; }
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td><strong>${r.customer_name}</strong><br><span class="muted">${r.city || ''}</span></td>
+        <td><code>${r.product_id || '-'}</code></td>
+        <td>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</td>
+        <td style="max-width:360px">${r.comment}</td>
+        <td><span class="badge ${r.approved ? 'badge-ok' : 'badge-pending'}">${r.approved ? 'Approved' : 'Pending'}</span></td>
+        <td class="muted">${fmtDate(r.created_at)}</td>
+        <td><div class="actions">
+          <button class="btn-icon success" onclick="setReviewApproval(${r.id}, ${!r.approved})">${r.approved ? 'Unapprove' : 'Approve'}</button>
+          <button class="btn-icon danger" onclick="deleteReview(${r.id})">Delete</button>
+        </div></td>
+      </tr>`).join('');
+  } catch(e) { toast(e.message, 'error'); tbody.innerHTML = emptyRow('Error loading reviews', 7); }
+}
+
+async function setReviewApproval(id, approved) {
+  try {
+    await req('/api/reviews/' + id, 'PUT', { approved });
+    toast('Review updated', 'success');
+    loadReviews();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteReview(id) {
+  if (!confirm('Delete this review?')) return;
+  try {
+    await req('/api/reviews/' + id, 'DELETE');
+    toast('Review deleted', 'success');
+    loadReviews();
+  } catch(e) { toast(e.message, 'error'); }
 }
 
 async function copyApiUrl() {
