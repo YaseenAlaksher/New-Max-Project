@@ -12,6 +12,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const Database = require('better-sqlite3');
+const { seedDemoData, resetDemoData, getDemoSummary } = require('./demo-data');
 
 let nodemailer = null;
 try {
@@ -907,6 +908,26 @@ app.post('/api/public/product-views/:id', (req, res) => {
     'ON CONFLICT(product_id) DO UPDATE SET views = views + 1, updated_at = datetime(\'now\')'
   ).run(productId);
   res.json({ ok: true });
+});
+
+// Demo data ----------------------------------------------------
+app.get('/api/demo/summary', requireAuth, (req, res) => {
+  res.json(getDemoSummary(db));
+});
+
+app.post('/api/demo/seed', requireAuth, (req, res) => {
+  const summary = seedDemoData(db, {
+    products: Math.min(80, Math.max(1, safeInt(req.body.products, 36))),
+    orders: Math.min(500, Math.max(1, safeInt(req.body.orders, 240))),
+    reviews: Math.min(250, Math.max(1, safeInt(req.body.reviews, 80))),
+    resetFirst: req.body.resetFirst !== false,
+  });
+  res.json({ ok: true, summary });
+});
+
+app.delete('/api/demo/reset', requireAuth, (req, res) => {
+  const summary = resetDemoData(db);
+  res.json({ ok: true, summary });
 });
 
 // Products -----------------------------------------------------

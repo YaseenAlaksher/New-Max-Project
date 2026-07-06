@@ -1056,6 +1056,28 @@ tr:hover td {
               </div>
             </div>
           </div>
+          <div class="card" id="demo-data-card" style="max-width:760px">
+            <div class="card-header">
+              <h3>Demo Data</h3>
+              <span class="api-health-pill warn" id="demo-summary-pill">Not loaded</span>
+            </div>
+            <div class="modal-body">
+              <div class="form-row">
+                <div class="form-group"><label>Demo Products</label><input type="number" id="demo-products-count" value="36" min="1" max="80" /></div>
+                <div class="form-group"><label>Demo Orders</label><input type="number" id="demo-orders-count" value="240" min="1" max="500" /></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Demo Reviews</label><input type="number" id="demo-reviews-count" value="80" min="1" max="250" /></div>
+                <div class="form-group"><label>Mode</label><select id="demo-reset-first"><option value="true">Reset demo then seed</option><option value="false">Add on top</option></select></div>
+              </div>
+              <p class="form-hint">Demo data uses IDs starting with <code>demo-</code> and <code>DEMO-</code>, so reset removes demo records without touching real products or orders.</p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+                <button class="topbar-btn topbar-btn-primary" onclick="seedDemoDataFromAdmin()">Seed Demo Data</button>
+                <button class="topbar-btn topbar-btn-secondary" onclick="loadDemoSummary()">Refresh Summary</button>
+                <button class="topbar-btn" style="border-color:var(--red);color:var(--red);background:#fff" onclick="resetDemoDataFromAdmin()">Reset Demo</button>
+              </div>
+            </div>
+          </div>
           <div class="card" style="max-width:480px">
             <div class="card-header"><h3>🔑 Change Password</h3></div>
             <div class="modal-body">
@@ -1345,7 +1367,7 @@ function navigate(page) {
   else if (page === 'orders') loadOrders();
   else if (page === 'banners') loadBanners();
   else if (page === 'reviews') loadReviews();
-  else if (page === 'settings') loadSettings();
+  else if (page === 'settings') { loadSettings(); loadDemoSummary(); }
 }
 
 // ══════════════════════════════════════════════════════
@@ -2030,6 +2052,59 @@ async function deleteReview(id) {
     toast('Review deleted', 'success');
     loadReviews();
   } catch(e) { toast(e.message, 'error'); }
+}
+
+async function loadDemoSummary() {
+  const pill = document.getElementById('demo-summary-pill');
+  if (!pill) return;
+  pill.className = 'api-health-pill warn';
+  pill.textContent = 'Loading...';
+  try {
+    const s = await req('/api/demo/summary');
+    pill.className = 'api-health-pill ok';
+    pill.textContent = `${s.products} products · ${s.orders} orders · ${s.reviews} reviews`;
+  } catch(e) {
+    pill.className = 'api-health-pill bad';
+    pill.textContent = 'Demo API error';
+    toast(e.message, 'error');
+  }
+}
+
+async function seedDemoDataFromAdmin() {
+  const btns = document.querySelectorAll('#demo-data-card button');
+  btns.forEach(btn => btn.disabled = true);
+  try {
+    const payload = {
+      products: Number(document.getElementById('demo-products-count')?.value || 36),
+      orders: Number(document.getElementById('demo-orders-count')?.value || 240),
+      reviews: Number(document.getElementById('demo-reviews-count')?.value || 80),
+      resetFirst: document.getElementById('demo-reset-first')?.value !== 'false',
+    };
+    const res = await req('/api/demo/seed', 'POST', payload);
+    toast('Demo data seeded successfully', 'success');
+    await loadDemoSummary();
+    if (document.getElementById('page-dashboard')?.classList.contains('active')) loadDashboard();
+    return res;
+  } catch(e) {
+    toast(e.message, 'error');
+  } finally {
+    btns.forEach(btn => btn.disabled = false);
+  }
+}
+
+async function resetDemoDataFromAdmin() {
+  if (!confirm('Reset demo data only? Real records will not be touched.')) return;
+  const btns = document.querySelectorAll('#demo-data-card button');
+  btns.forEach(btn => btn.disabled = true);
+  try {
+    await req('/api/demo/reset', 'DELETE');
+    toast('Demo data reset', 'success');
+    await loadDemoSummary();
+  } catch(e) {
+    toast(e.message, 'error');
+  } finally {
+    btns.forEach(btn => btn.disabled = false);
+  }
 }
 
 async function copyApiUrl() {

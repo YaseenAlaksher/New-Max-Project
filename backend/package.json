@@ -8,7 +8,10 @@
     "dev": "nodemon server.js",
     "seed": "node seed.js",
     "check": "node --check server.js",
-    "postinstall": "npm rebuild better-sqlite3"
+    "postinstall": "npm rebuild better-sqlite3",
+    "demo:seed": "node demo-seed.js",
+    "demo:reset": "node demo-seed.js --reset",
+    "demo:summary": "node demo-seed.js --summary"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

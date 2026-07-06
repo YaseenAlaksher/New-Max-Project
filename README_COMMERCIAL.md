@@ -18,3 +18,14 @@ Production-ready static storefront with a Node.js/Express admin backend and SQLi
 ## Not Included By Request
 
 Coupon/discount functionality is intentionally not implemented.
+
+
+## Demo Data
+
+The backend includes a safe demo data system for client presentations.
+
+- Seed demo data: `cd backend && npm run demo:seed`
+- Reset demo data: `cd backend && npm run demo:reset`
+- View summary: `cd backend && npm run demo:summary`
+
+Demo records are prefixed with `demo-` products and `DEMO-` orders. The Admin Dashboard also includes a Demo Data card with Seed and Reset buttons.
