@@ -5602,3 +5602,48 @@ body.dark .payment-method-card {
   .managed-banner { min-height: 240px; }
   .managed-banner-copy { padding: var(--space-xl); }
 }
+
+
+
+
+/* PHI Mobile Visibility Guard */
+html:not(.reveal-ready) [data-reveal],
+html.reveal-disabled [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html.reveal-disabled [data-reveal] {
+  transition: none !important;
+}
+
+@media (max-width: 768px) {
+  .hero-section,
+  .hero-content,
+  .hero-img-wrap,
+  .search-section,
+  .trust-badges-section,
+  .section,
+  .cart-section {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  .hero-section {
+    min-height: auto !important;
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-xl);
+  }
+
+  .hero-img-wrap {
+    min-height: 180px;
+  }
+
+  .hero-img-wrap img {
+    display: block;
+    min-height: 180px;
+    background: linear-gradient(135deg, #EFF6FF, #F8FAFC);
+  }
+}
+/* End PHI Mobile Visibility Guard */

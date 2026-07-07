@@ -1,11 +1,11 @@
-const CACHE_NAME = 'phi-store-v10';
+const CACHE_NAME = 'phi-store-v11';
 const CORE_ASSETS = [
   './',
   './index.html',
   './404.html',
-  './style.css?v=10',
-  './products.js?v=10',
-  './script.js?v=10',
+  './style.css?v=11',
+  './products.js?v=11',
+  './script.js?v=11',
   './images/favicon.png',
   './images/og-cover.jpg'
 ];
@@ -20,6 +20,10 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
   );
   self.clients.claim();
+});
+
+self.addEventListener('message', event => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {

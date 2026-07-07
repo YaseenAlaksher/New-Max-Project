@@ -2485,7 +2485,53 @@ function hideSkeletons() {
 
 // ─── SCROLL REVEAL SYSTEM ────────────────────────────────────
 function initScrollReveal() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const doc = document.documentElement;
+
+  const prepareRevealTargets = () => {
+    const targets = new Set(document.querySelectorAll('[data-reveal]'));
+
+    document.querySelectorAll('.section, .trust-badges-section, .cart-section').forEach(sec => {
+      if (!sec.hasAttribute('data-reveal')) sec.setAttribute('data-reveal', '');
+      targets.add(sec);
+    });
+
+    document.querySelectorAll('.products').forEach(grid => {
+      grid.querySelectorAll('.product').forEach((card, i) => {
+        card.setAttribute('data-reveal', '');
+        card.classList.add('reveal-delay-' + Math.min(i + 1, 6));
+        targets.add(card);
+      });
+    });
+
+    document.querySelectorAll('.trust-badge-item').forEach((item, i) => {
+      item.setAttribute('data-reveal', '');
+      item.classList.add('reveal-delay-' + Math.min(i + 1, 4));
+      targets.add(item);
+    });
+
+    document.querySelectorAll('.why-item').forEach((item, i) => {
+      item.setAttribute('data-reveal', '');
+      item.classList.add('reveal-delay-' + Math.min(i + 1, 6));
+      targets.add(item);
+    });
+
+    return Array.from(targets);
+  };
+
+  const revealAll = () => {
+    doc.classList.add('reveal-disabled');
+    document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('revealed'));
+  };
+
+  const targets = prepareRevealTargets();
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (isMobile || reducedMotion || !('IntersectionObserver' in window)) {
+    revealAll();
+    return;
+  }
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -2493,47 +2539,29 @@ function initScrollReveal() {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  }, { threshold: 0.08, rootMargin: '0px 0px 120px 0px' });
 
-  document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
-
-  // Auto-assign reveal attributes to sections
-  const sections = document.querySelectorAll('.section, .trust-badges-section, .cart-section');
-  sections.forEach(sec => {
-    if (!sec.hasAttribute('data-reveal')) {
-      sec.setAttribute('data-reveal', '');
-      observer.observe(sec);
+  doc.classList.add('reveal-ready');
+  targets.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 120) {
+      el.classList.add('revealed');
+    } else {
+      observer.observe(el);
     }
   });
 
-  // Stagger product cards
-  document.querySelectorAll('.products').forEach(grid => {
-    const cards = grid.querySelectorAll('.product');
-    cards.forEach((card, i) => {
-      card.setAttribute('data-reveal', '');
-      card.classList.add('reveal-delay-' + Math.min(i + 1, 6));
-      observer.observe(card);
+  setTimeout(() => {
+    document.querySelectorAll('[data-reveal]:not(.revealed)').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 240) el.classList.add('revealed');
     });
-  });
+  }, 600);
 
-  // Stagger trust badges
-  document.querySelectorAll('.trust-badge-item').forEach((item, i) => {
-    item.setAttribute('data-reveal', '');
-    item.classList.add('reveal-delay-' + Math.min(i + 1, 4));
-    observer.observe(item);
-  });
-
-  // Stagger why-us items
-  document.querySelectorAll('.why-item').forEach((item, i) => {
-    item.setAttribute('data-reveal', '');
-    item.classList.add('reveal-delay-' + Math.min(i + 1, 6));
-    observer.observe(item);
-  });
+  setTimeout(() => {
+    if (!document.querySelector('[data-reveal].revealed')) revealAll();
+  }, 1400);
 }
-
-// ─── SEARCH SUGGESTIONS ──────────────────────────────────────
-let searchSuggestionIndex = -1;
-let searchSuggestionsData = [];
 
 function initSearchSuggestions() {
   const input = document.getElementById('search');
@@ -3052,13 +3080,31 @@ function initAll(lang) {
   fetchProductsFromAPI();
 }
 
+window.addEventListener('error', () => {
+  document.documentElement.classList.add('reveal-disabled');
+});
+window.addEventListener('unhandledrejection', () => {
+  document.documentElement.classList.add('reveal-disabled');
+});
+
+// PHI mobile safety fallback: never leave the storefront invisible.
+setTimeout(() => {
+  const hero = document.querySelector('.hero-section');
+  if (hero && hero.getBoundingClientRect().height < 40) {
+    document.documentElement.classList.add('reveal-disabled');
+  }
+}, 1200);
+
 document.addEventListener('DOMContentLoaded', () => {
   initAll(getLang());
 });
 
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => undefined);
+    navigator.serviceWorker.register('sw.js?v=11').then(reg => {
+      reg.update?.();
+      if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+    }).catch(() => undefined);
   });
 }
 
